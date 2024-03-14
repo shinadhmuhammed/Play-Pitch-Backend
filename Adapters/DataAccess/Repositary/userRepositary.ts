@@ -14,6 +14,7 @@ const findUser=async(email:string)=>{
 }   
 
 
+
 const getOtp=async(userId:string)=>{
         try {
             return await Otp.findOne({userId:userId})
@@ -25,17 +26,32 @@ const getOtp=async(userId:string)=>{
 
 const saveOtpInDatabase = async (userId: string, otp: string) => {
     try {
-      const newOtp = new Otp({
-        userId: userId,
-        otp: otp,
-        createAt: new Date(),
-      });
-      await newOtp.save();
+        const existingOtp = await Otp.findOne({ userId: userId });
+        if (existingOtp) {
+            existingOtp.otp = otp;
+            await existingOtp.save();
+        } else {
+            const newOtp = new Otp({
+                userId: userId,
+                otp: otp,
+                createAt: new Date(),
+            });
+            await newOtp.save();
+        }
     } catch (error) {
-      console.error("Error saving OTP in the database:", error);
-      throw error;
+        console.error("Error saving OTP in the database:", error);
+        throw error;
     }
 };
+
+
+interface otpData {
+    userId: string;
+    otp: string;
+    createdAt: Date;
+  }
+
+
 
 
 

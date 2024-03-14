@@ -1,7 +1,8 @@
 import bcrypt from 'bcrypt'
-import User from '../Adapters/DataAccess/Models/UserModel'
-import userRepositary from '../Adapters/DataAccess/Repositary/userRepositary'
+import User from '../../Adapters/DataAccess/Models/UserModel'
+import userRepositary from '../../Adapters/DataAccess/Repositary/userRepositary'
 import {ObjectId} from 'mongodb'
+import Otp from '../../Adapters/DataAccess/Models/Otp'
 
 
 
@@ -38,20 +39,40 @@ const createNewUser = async (user: ReqBody) => {
 
 
 
+type User = {
+    _id: ObjectId;
+    username?: string | null; // Make username nullable
+    email: string;
+    phone?: number | null; // Make phone nullable
+    password: string;
+    isBlocked:boolean
+};
 
-export const verifyLogin = async (user: ReqBody): Promise<boolean> => {
+
+
+
+export const verifyLogin = async (user: ReqBody): Promise<User | false> => {
     try {
         const userDetails = await userRepositary.findUser(user.email);
         if (userDetails !== undefined && userDetails !== null) {
-            return await bcrypt.compare(user.password, userDetails.password);
+            const passwordMatch = await bcrypt.compare(user.password, userDetails.password);
+            if (passwordMatch) {
+                // Omit optional properties or provide default values
+                const { _id, email, password, isBlocked } = userDetails;
+                return { _id, email, password, isBlocked };
+            } else {
+                return false; // Return false if passwords do not match
+            }
         } else {
-            return false; 
+            return false; // Return false if user is not found
         }
     } catch (error) {
         console.log(error);
-        return false; 
+        return false;
     }
 };
+
+
 
 
 
@@ -61,6 +82,8 @@ interface otp {
     otp: string;
     createdAt: Date;
   }
+
+
 
 
   

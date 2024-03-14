@@ -31,4 +31,12 @@ const JwtUser = async (req: CustomRequest, res: Response, next: NextFunction) =>
   }
 };
 
-export default JwtUser;
+
+const generateToken=(id:string)=>{
+      const secretKey="Hello@123!"
+      return jwt.sign({id},secretKey,{expiresIn:'1h'})
+}
+
+export default{
+   JwtUser,generateToken
+}
