@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwtUser";
-import { getSavedOtp, verifyLogin } from "../../Business/services/useCases";
+import { getSavedOtp, verifyLogin,checkUser } from "../../Business/services/useCases";
 import createNewUser from "../../Business/services/useCases";
 import sendOTPByEmail from "../../Business/utils/nodemailer";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
+import User from "../DataAccess/Models/UserModel";
+import bcrypt from 'bcrypt'
 
 try {
 } catch (error) {}
@@ -134,9 +136,67 @@ const resendOtp = async (
   }
 };
 
+
+
+
+
+const forgotPassword=async(req:Request,res:Response)=>{
+  try {
+    const { email, otp, newPassword,confirmPassword } = req.body;
+    console.log(email,otp,newPassword,confirmPassword,'haaaaaaaaaaai,hellllllllllllllllll')
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (otp !== user.otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+  }
+
+  
+ 
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+
+
+
+const sendOtp=async(req:Request,res:Response)=>{
+    try {
+        const {email}=req.body
+        console.log(email,'llllllllllllll')
+        const user = await User.findOne({ email });
+
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+        const otp = generateOtp();
+        user.otp=otp
+        await user.save();
+          sendOTPByEmail(email,otp)
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+
+
 export default {
   signup,
   login,
   verifyOtp,
   resendOtp,
+  forgotPassword,
+  sendOtp
 };

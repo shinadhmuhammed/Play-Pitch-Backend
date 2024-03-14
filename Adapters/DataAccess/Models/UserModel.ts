@@ -12,6 +12,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    otp: {
+        type: String,
+        default: null,
+        expires: 600 
+    },
     isBlocked: {
         type: Boolean,
         default: false

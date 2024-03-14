@@ -24,6 +24,7 @@ const getOtp=async(userId:string)=>{
 }
 
 
+
 const saveOtpInDatabase = async (userId: string, otp: string) => {
     try {
         const existingOtp = await Otp.findOne({ userId: userId });
@@ -45,11 +46,7 @@ const saveOtpInDatabase = async (userId: string, otp: string) => {
 };
 
 
-interface otpData {
-    userId: string;
-    otp: string;
-    createdAt: Date;
-  }
+
 
 
 

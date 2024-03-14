@@ -41,9 +41,9 @@ const createNewUser = async (user: ReqBody) => {
 
 type User = {
     _id: ObjectId;
-    username?: string | null; // Make username nullable
+    username?: string | null; 
     email: string;
-    phone?: number | null; // Make phone nullable
+    phone?: number | null; 
     password: string;
     isBlocked:boolean
 };
@@ -57,14 +57,13 @@ export const verifyLogin = async (user: ReqBody): Promise<User | false> => {
         if (userDetails !== undefined && userDetails !== null) {
             const passwordMatch = await bcrypt.compare(user.password, userDetails.password);
             if (passwordMatch) {
-                // Omit optional properties or provide default values
                 const { _id, email, password, isBlocked } = userDetails;
                 return { _id, email, password, isBlocked };
             } else {
-                return false; // Return false if passwords do not match
+                return false; 
             }
         } else {
-            return false; // Return false if user is not found
+            return false; 
         }
     } catch (error) {
         console.log(error);
@@ -98,6 +97,24 @@ export const getSavedOtp=async(userId:string)=>{
         }
 }
 
+
+export const checkUser=async(userId:string)=>{
+        try {
+            const findUser=await userRepositary.findUser(userId)
+            if(findUser !== undefined){
+                if(findUser !== null){
+                    if(findUser.email){
+                        return {message:'user Exists'}
+                    }else{
+                        return {message:'User Not Found'}
+                    }
+                }
+            }
+            return {message:'User Not Found'}
+        } catch (error) {
+            console.log('error is happening for verifying')
+        }
+}
 
 
 
