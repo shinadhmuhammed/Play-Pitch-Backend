@@ -171,24 +171,35 @@ const forgotPassword=async(req:Request,res:Response)=>{
 
 
 
-const sendOtp=async(req:Request,res:Response)=>{
+
+
+const sendOtp = async (req: Request, res: Response) => {
     try {
-        const {email}=req.body
-        console.log(email,'llllllllllllll')
+        const { email } = req.body;
         const user = await User.findOne({ email });
 
         if (!user) {
-          return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
+
         const otp = generateOtp();
-        user.otp=otp
+        user.otp = otp; 
         await user.save();
-          sendOTPByEmail(email,otp)
+        sendOTPByEmail(email, otp);
+
+        
+        setTimeout(async () => {
+            user.otp = null;
+            await user.save();
+        }, 2 * 60 * 1000); 
+
+        res.status(200).json({ message: 'OTP sent successfully' });
     } catch (error) {
-      console.error('Error sending OTP:', error);
-      res.status(500).json({ message: 'Internal server error' });
+        console.error('Error sending OTP:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
+
 
 
 

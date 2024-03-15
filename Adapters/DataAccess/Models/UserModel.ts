@@ -13,15 +13,18 @@ const UserSchema = new mongoose.Schema({
         required: true
     },
     otp: {
-        type: String,
-        default: null,
-        expires: 600 
+        type: String
     },
     isBlocked: {
         type: Boolean,
         default: false
     }
 });
+
+
+
+
+
 
 
 const User=mongoose.model('userModel',UserSchema)
