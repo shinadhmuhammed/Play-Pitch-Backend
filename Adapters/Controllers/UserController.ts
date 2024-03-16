@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwtUser";
-import { getSavedOtp, verifyLogin,checkUser } from "../../Business/services/useCases";
-import createNewUser from "../../Business/services/useCases";
+import { getSavedOtp, verifyLogin,checkUser } from "../../Business/services/userService";
+import createNewUser from "../../Business/services/userService";
 import sendOTPByEmail from "../../Business/utils/nodemailer";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
@@ -191,7 +191,7 @@ const sendOtp = async (req: Request, res: Response) => {
         setTimeout(async () => {
             user.otp = null;
             await user.save();
-        }, 2 * 60 * 1000); 
+        }, 3 * 60 * 1000); 
 
         res.status(200).json({ message: 'OTP sent successfully' });
     } catch (error) {

@@ -88,15 +88,19 @@ const verifyOtp = async (req: Request, res: Response) => {
   }
 };
 
-// const resendOtp=async( req: Request,
-//   res: Response)=>{
-// try {
-//     const {otp}=req.body
-//     console.log(otp,'otpppp')
-//     await sendOTPByEmail(req.Owner.email,otp)
-// } catch (error) {
-//   console.log(error)
-// }
-// }
+const resendOtp=async( req: Request,
+  res: Response)=>{
+try {
+    const {email}=req.body
+    console.log(email,'otpppp')
+    const gotp=generateOTP().toString()
+    await ownerRepositary.saveOtp(email, gotp);
+    await sendOTPByEmail(email,gotp)
+    res.status(200).json({status:200,message:'otp resend succesfully'})
+} catch (error) {
+  console.log(error)
+  res.status(500).json({ status: 500, message: "Internal server error" });
+}
+}
 
-export default { signup, verifyOtp };
+export default { signup, verifyOtp,resendOtp };

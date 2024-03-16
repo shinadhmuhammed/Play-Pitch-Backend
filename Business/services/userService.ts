@@ -16,6 +16,7 @@ interface ReqBody{
 
 
 
+
 const createNewUser = async (user: ReqBody) => {
     try {
         const hashedPassword = await bcrypt.hash(user.password, 5);
