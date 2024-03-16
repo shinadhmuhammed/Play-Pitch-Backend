@@ -1,6 +1,19 @@
 import express from 'express'
 import bcrypt from 'bcrypt'
+import ownerRepositary from '../../Adapters/DataAccess/Repositary/ownerRepositary'
 
+
+interface Ownersignup {
+    email: string;
+    phone: string;
+    password: string;
+    otp?: string;
+  }
+  
+  interface submitResponse {
+    status: number;
+    message: string;
+  }
 
 
 const passwordBcrypt=async(password:string)=>{
@@ -13,5 +26,12 @@ const passwordBcrypt=async(password:string)=>{
     }
 }
 
+const confirmPassword=async(plainPassword:string,hashedPassword:string):Promise<boolean>=>{
+    return await bcrypt.compare(plainPassword, hashedPassword)
+}
 
-export default {passwordBcrypt}
+
+
+
+
+export default {passwordBcrypt,confirmPassword}

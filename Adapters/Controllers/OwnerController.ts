@@ -3,6 +3,8 @@ import ownerRepositary from "../DataAccess/Repositary/ownerRepositary";
 import ownerService from "../../Business/services/ownerService";
 import Owner from "../DataAccess/Models/Turfowner";
 import sendOTPByEmail, { generateOtp } from "../../Business/utils/nodemailer";
+import jwtUser from "../../FrameWorks/Middlewares/jwtUser";
+
 
 interface Ownersignup {
   email: string;
@@ -14,6 +16,7 @@ interface Ownersignup {
 interface submitResponse {
   status: number;
   message: string;
+  token?:string;
 }
 
 const signup = async (
@@ -59,9 +62,11 @@ const signup = async (
   }
 };
 
+
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000);
 }
+
 
 const verifyOtp = async (req: Request, res: Response) => {
   try {
@@ -88,6 +93,7 @@ const verifyOtp = async (req: Request, res: Response) => {
   }
 };
 
+
 const resendOtp=async( req: Request,
   res: Response)=>{
 try {
@@ -103,4 +109,31 @@ try {
 }
 }
 
-export default { signup, verifyOtp,resendOtp };
+
+const ownerLogin=async( req: Request<{}, {}, Ownersignup>,
+  res: Response<submitResponse>)=>{
+      try {
+            const{email,password}=req.body
+            const owner=await ownerRepositary.findOwner(email)
+            if (!owner) {
+              return res.status(404).json({ status: 404, message: "Owner not found" });
+          }
+  
+          const isPasswordValid = await ownerService.confirmPassword(password,owner.password);
+  
+          if (!isPasswordValid) {
+              return res.status(401).json({ status: 401, message: "Invalid password" });
+          }
+
+          const token=jwtUser.generateToken(owner.id)
+          
+          res.status(200).json({ status: 200, message: "Login successful",token });
+      } catch (error) {
+          console.error(error);
+          return res.status(500).json({ status: 500, message: "Internal Server Error" });
+      }
+  }
+    
+
+
+export default { signup, verifyOtp,resendOtp,ownerLogin };
