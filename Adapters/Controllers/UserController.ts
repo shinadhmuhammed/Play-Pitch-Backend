@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import JwtUser from "../../FrameWorks/Middlewares/jwtUser";
+import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import { getSavedOtp, verifyLogin,checkUser } from "../../Business/services/userService";
 import createNewUser from "../../Business/services/userService";
 import sendOTPByEmail from "../../Business/utils/nodemailer";
@@ -19,6 +19,7 @@ interface ReqBody {
   confirm: string;
   otp: string;
   createdAt: Date;
+  isBlocked:boolean;
 }
 
 interface signupSubmitResponse {
@@ -61,13 +62,15 @@ const login = async (
   res: Response<loginSubmitResponse>
 ) => {
   try {
-    console.log(req.body, "hello");
     const verifyUser = await verifyLogin(req.body);
-
     if (verifyUser && typeof verifyUser !== 'boolean') { 
+      if(verifyUser.isBlocked){
+        res.status(403).json({status:403,message:'user is blocked'})
+      }else{
       const token = JwtUser.generateToken(verifyUser._id.toString());
       console.log(token,'token')
       res.status(200).json({ status: 200, message: "Login successful", token });
+      }
     } else {
       res.status(401).json({ status: 401, message: "Invalid credentials" });
     }

@@ -1,7 +1,7 @@
 import express from 'express'
 const userRouter=express.Router()
 import UserController from '../../Adapters/Controllers/UserController'
-import JwtUser from '../Middlewares/jwtUser'
+import JwtUser from '../Middlewares/jwt/jwtUser'
 
 
 

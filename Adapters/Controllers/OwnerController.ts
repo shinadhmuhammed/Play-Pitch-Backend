@@ -3,9 +3,8 @@ import ownerRepositary from "../DataAccess/Repositary/ownerRepositary";
 import ownerService from "../../Business/services/ownerService";
 import Owner from "../DataAccess/Models/Turfowner";
 import sendOTPByEmail, { generateOtp } from "../../Business/utils/nodemailer";
-import jwtUser from "../../FrameWorks/Middlewares/jwtUser";
+import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import Turf from "../DataAccess/Models/turfModel";
-
 
 interface Ownersignup {
   email: string;
@@ -17,7 +16,7 @@ interface Ownersignup {
 interface submitResponse {
   status: number;
   message: string;
-  token?:string;
+  token?: string;
 }
 
 const signup = async (
@@ -63,16 +62,14 @@ const signup = async (
   }
 };
 
-
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
-
 const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { email, otp } = req.body;
-    console.log(email,otp,'helloooooooooooooooooooooo')
+    console.log(email, otp, "helloooooooooooooooooooooo");
     const owner = await Owner.findOne({ email });
 
     if (!owner) {
@@ -90,82 +87,84 @@ const verifyOtp = async (req: Request, res: Response) => {
       .json({ status: 200, message: "OTP verified successfully" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ status: 500, message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal Server Error" });
   }
 };
 
-
-const resendOtp=async( req: Request,
-  res: Response)=>{
-try {
-    const {email}=req.body
-    console.log(email,'otpppp')
-    const gotp=generateOTP().toString()
+const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    console.log(email, "otpppp");
+    const gotp = generateOTP().toString();
     await ownerRepositary.saveOtp(email, gotp);
-    await sendOTPByEmail(email,gotp)
-    res.status(200).json({status:200,message:'otp resend succesfully'})
-} catch (error) {
-  console.log(error)
-  res.status(500).json({ status: 500, message: "Internal server error" });
-}
-}
-
-
-const ownerLogin=async( req: Request<{}, {}, Ownersignup>,
-  res: Response<submitResponse>)=>{
-      try {
-            const{email,password}=req.body
-            const owner=await ownerRepositary.findOwner(email)
-            if (!owner) {
-              return res.status(404).json({ status: 404, message: "Owner not found" });
-          }
-  
-          const isPasswordValid = await ownerService.confirmPassword(password,owner.password);
-  
-          if (!isPasswordValid) {
-              return res.status(401).json({ status: 401, message: "Invalid password" });
-          }
-
-          const token=jwtUser.generateToken(owner.id)
-          
-          res.status(200).json({ status: 200, message: "Login successful",token });
-      } catch (error) {
-          console.error(error);
-          return res.status(500).json({ status: 500, message: "Internal Server Error" });
-      }
+    await sendOTPByEmail(email, gotp);
+    res.status(200).json({ status: 200, message: "otp resend succesfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: 500, message: "Internal server error" });
   }
-    
-  
+};
 
-  const addTurf = async (req:Request, res:Response) => {
-        try {
-            const { turfName, address, city, aboutVenue, facilities, openingTime, closingTime} = req.body;
-            console.log(req.body)
-
-            // Create a new instance of Turf model
-            const newTurf = new Turf({
-                turfName,
-                address,
-                city,
-                aboutVenue,
-                facilities,
-                openingTime,
-                closingTime,
-            });
-
-            // Save the turf to the database
-            await newTurf.save();
-
-            // Respond with success message
-            res.status(201).json({ message: 'Turf added successfully' });
-        } catch (error) {
-            console.error('Error adding turf:', error);
-            res.status(500).json({ message: 'Internal server error' });
-        }
+const ownerLogin = async (
+  req: Request<{}, {}, Ownersignup>,
+  res: Response<submitResponse>
+) => {
+  try {
+    const { email, password } = req.body;
+    const owner = await ownerRepositary.findOwner(email);
+    if (!owner) {
+      return res.status(404).json({ status: 404, message: "Owner not found" });
     }
 
+    const isPasswordValid = await ownerService.confirmPassword(
+      password,
+      owner.password
+    );
 
+    if (!isPasswordValid) {
+      return res.status(401).json({ status: 401, message: "Invalid password" });
+    }
 
+    const token = jwtUser.generateToken(owner.id);
 
+    res.status(200).json({ status: 200, message: "Login successful", token });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ status: 500, message: "Internal Server Error" });
+  }
+};
 
-export default { signup, verifyOtp,resendOtp,ownerLogin,addTurf };
+const addTurf = async (req: Request, res: Response) => {
+  try {
+    const {
+      turfName,
+      address,
+      city,
+      aboutVenue,
+      facilities,
+      openingTime,
+      closingTime,
+    } = req.body;
+    console.log(req.body);
+    const newTurf = new Turf({
+      turfName,
+      address,
+      city,
+      aboutVenue,
+      facilities,
+      openingTime,
+      closingTime,
+    });
+    await newTurf.save();
+    res.status(201).json({ message: "Turf added successfully" });
+  } catch (error) {
+    console.error("Error adding turf:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export default { signup, verifyOtp, resendOtp, ownerLogin, addTurf };
