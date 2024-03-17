@@ -13,6 +13,7 @@ userRouter.post('/resendotp',UserController.resendOtp)
 userRouter.post('/login',UserController.login)
 userRouter.post('/forgotpassword',UserController.forgotPassword)
 userRouter.post('/sendotp',UserController.sendOtp)
+userRouter.get('/getturf',UserController.getTurf)
 
 
 

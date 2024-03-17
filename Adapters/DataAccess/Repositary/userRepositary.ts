@@ -1,6 +1,7 @@
 import {ObjectId} from 'mongodb'
 import User from '../Models/UserModel'
 import Otp from '../Models/Otp'
+import Turf from '../Models/turfModel'
 
 
 
@@ -47,6 +48,16 @@ const saveOtpInDatabase = async (userId: string, otp: string) => {
 
 
 
+    const turfGet=async()=>{
+        try {
+            const turf=await Turf.find()
+            return turf
+        } catch (error) {
+                console.log(error)
+        }  
+    }
+
+
 
 
 
@@ -56,5 +67,5 @@ const saveOtpInDatabase = async (userId: string, otp: string) => {
 
 
 export default {
-    findUser,getOtp,saveOtpInDatabase
+    findUser,getOtp,saveOtpInDatabase,turfGet
 }

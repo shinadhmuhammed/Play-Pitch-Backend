@@ -4,7 +4,8 @@ import ownerService from "../../Business/services/ownerService";
 import Owner from "../DataAccess/Models/Turfowner";
 import sendOTPByEmail, { generateOtp } from "../../Business/utils/nodemailer";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
-import Turf from "../DataAccess/Models/turfModel";
+
+
 
 interface Ownersignup {
   email: string;
@@ -138,33 +139,18 @@ const ownerLogin = async (
   }
 };
 
+
+
 const addTurf = async (req: Request, res: Response) => {
   try {
-    const {
-      turfName,
-      address,
-      city,
-      aboutVenue,
-      facilities,
-      openingTime,
-      closingTime,
-    } = req.body;
-    console.log(req.body);
-    const newTurf = new Turf({
-      turfName,
-      address,
-      city,
-      aboutVenue,
-      facilities,
-      openingTime,
-      closingTime,
-    });
-    await newTurf.save();
-    res.status(201).json({ message: "Turf added successfully" });
+      const addTurf=await ownerService.createTurf(req,res)
+      res.status(201).json({ message: "Turf added successfully" });
   } catch (error) {
-    console.error("Error adding turf:", error);
-    res.status(500).json({ message: "Internal server error" });
+      console.error("Error adding turf:", error);
+      res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export default { signup, verifyOtp, resendOtp, ownerLogin, addTurf };
+
+
+export default { signup, verifyOtp, resendOtp, ownerLogin,addTurf };

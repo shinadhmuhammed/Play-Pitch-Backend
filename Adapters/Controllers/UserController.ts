@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
-import { getSavedOtp, verifyLogin,checkUser } from "../../Business/services/userService";
+import {
+  getSavedOtp,
+  verifyLogin,
+  checkUser,
+} from "../../Business/services/userService";
 import createNewUser from "../../Business/services/userService";
 import sendOTPByEmail from "../../Business/utils/nodemailer";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
-import bcrypt from 'bcrypt'
+import bcrypt from "bcrypt";
 
 try {
 } catch (error) {}
@@ -19,7 +23,7 @@ interface ReqBody {
   confirm: string;
   otp: string;
   createdAt: Date;
-  isBlocked:boolean;
+  isBlocked: boolean;
 }
 
 interface signupSubmitResponse {
@@ -56,20 +60,21 @@ interface loginSubmitResponse {
   token?: string;
 }
 
-
 const login = async (
   req: Request<{}, {}, ReqBody>,
   res: Response<loginSubmitResponse>
 ) => {
   try {
     const verifyUser = await verifyLogin(req.body);
-    if (verifyUser && typeof verifyUser !== 'boolean') { 
-      if(verifyUser.isBlocked){
-        res.status(403).json({status:403,message:'user is blocked'})
-      }else{
-      const token = JwtUser.generateToken(verifyUser._id.toString());
-      console.log(token,'token')
-      res.status(200).json({ status: 200, message: "Login successful", token });
+    if (verifyUser && typeof verifyUser !== "boolean") {
+      if (verifyUser.isBlocked) {
+        res.status(403).json({ status: 403, message: "user is blocked" });
+      } else {
+        const token = JwtUser.generateToken(verifyUser._id.toString());
+        console.log(token, "token");
+        res
+          .status(200)
+          .json({ status: 200, message: "Login successful", token });
       }
     } else {
       res.status(401).json({ status: 401, message: "Invalid credentials" });
@@ -79,7 +84,6 @@ const login = async (
     res.status(500).json({ status: 500, message: "Internal server error" });
   }
 };
-
 
 interface verifyOtpBody {
   status: number;
@@ -139,69 +143,67 @@ const resendOtp = async (
   }
 };
 
-
-
-
-
-const forgotPassword=async(req:Request,res:Response)=>{
+const forgotPassword = async (req: Request, res: Response) => {
   try {
-    const { email, otp, newPassword,confirmPassword } = req.body;
-    console.log(email,otp,newPassword,confirmPassword,'haaaaaaaaaaai,hellllllllllllllllll')
+    const { email, otp, newPassword, confirmPassword } = req.body;
 
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     if (otp !== user.otp) {
-      return res.status(400).json({ message: 'Invalid OTP' });
-  }
-
-  
- 
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
-    return res.status(200).json({ message: 'Password reset successfully' });
+    return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
-    console.error('Error resetting password:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
-
-
-
-
-
+};
 
 const sendOtp = async (req: Request, res: Response) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const otp = generateOtp();
-        user.otp = otp; 
-        await user.save();
-        sendOTPByEmail(email, otp);
-
-        
-        setTimeout(async () => {
-            user.otp = null;
-            await user.save();
-        }, 3 * 60 * 1000); 
-
-        res.status(200).json({ message: 'OTP sent successfully' });
-    } catch (error) {
-        console.error('Error sending OTP:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    const otp = generateOtp();
+    user.otp = otp;
+    await user.save();
+    sendOTPByEmail(email, otp);
+
+    setTimeout(async () => {
+      user.otp = undefined;
+      await user.save();
+    }, 3 * 60 * 1000);
+
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+const getTurf=async(req:Request,res:Response)=>{
+        try {
+          const turf=await userRepositary.turfGet()
+          res.status(200).json(turf)
+        } catch (error) {
+          res.status(500).json({message:'Internal server error'})
+        }
 }
+
+
 
 
 
@@ -212,5 +214,6 @@ export default {
   verifyOtp,
   resendOtp,
   forgotPassword,
-  sendOtp
+  sendOtp,
+  getTurf
 };
