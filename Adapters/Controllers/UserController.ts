@@ -10,6 +10,9 @@ import sendOTPByEmail from "../../Business/utils/nodemailer";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
 import bcrypt from "bcrypt";
+import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
+import jwt from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
 
 try {
 } catch (error) {}
@@ -37,10 +40,13 @@ const signup = async (
 ) => {
   try {
     const otp = generateOtp();
+    console.log(otp, "otpppppppppp");
     await sendOTPByEmail(req.body.email, otp);
-    await userRepositary.saveOtpInDatabase(req.body.userId, otp);
-    console.log(otp, "heeeeyy");
-    const newUser = await createNewUser(req.body);
+
+    const token = jwtUser.generateToken(otp);
+    console.log(token, "tokennnnnnnnnnnnnnsssssssss");
+    res.cookie("otp", token);
+
     res.status(201).json({ status: 201, message: "User created successfully" });
   } catch (error) {
     console.error(error);
@@ -71,7 +77,7 @@ const login = async (
         res.status(403).json({ status: 403, message: "user is blocked" });
       } else {
         const token = JwtUser.generateToken(verifyUser._id.toString());
-        console.log(token, "token");
+        console.log(token, "tokennnnnnnnnnn");
         res
           .status(200)
           .json({ status: 200, message: "Login successful", token });
@@ -85,44 +91,40 @@ const login = async (
   }
 };
 
-interface verifyOtpBody {
-  status: number;
-  userId: string;
-  otp: string;
-  createdAt: Date;
-  purpose?: string;
-}
-
 const verifyOtp = async (
-  req: Request<{}, {}, verifyOtpBody>,
+  req: Request<{}, {}, ReqBody>,
   res: Response<any, Record<string, any>>
 ) => {
   try {
-    const savedOtp = await getSavedOtp(req.body.userId);
-    console.log(savedOtp, "saved OTp");
-    if (savedOtp) {
-      const currentDateTime = new Date();
-      const expiryTime = new Date(savedOtp.createAt);
-      expiryTime.setMinutes(expiryTime.getMinutes() + 10);
+    console.log("Received OTP verification request");
 
-      if (currentDateTime <= expiryTime) {
-        if (req.body.otp === savedOtp.otp) {
-          res
-            .status(200)
-            .json({ status: 200, message: "OTP verified successfully" });
-        } else {
-          res.status(400).json({ status: 400, message: "Invalid OTP" });
-        }
-      } else {
-        res.status(400).json({ status: 400, message: "OTP expired" });
-      }
-    } else {
+    const { otp } = req.body;
+    console.log(req.body, "req.bodyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+
+    const token = req.cookies.otp;
+    console.log("Received OTP token:", token);
+
+    const jwtOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
+    console.log(jwtOtp);
+
+    if (typeof jwtOtp === "string") {
       res
-        .status(404)
-        .json({ status: 404, message: "No OTP found for the user" });
+        .status(400)
+        .json({ status: 400, message: "Invalid or expired token" });
+      return;
+    }
+
+    if (otp === jwtOtp.id) {
+      res
+        .status(200)
+        .json({ status: 200, message: "OTP verified successfully" });
+
+      const newUser = await createNewUser(req.body);
+    } else {
+      res.status(400).json({ status: 400, message: "Invalid OTP" });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     res.status(500).json({ status: 500, message: "Internal server error" });
   }
 };
@@ -132,10 +134,12 @@ const resendOtp = async (
   res: Response
 ) => {
   try {
-    const { userId, email } = req.body;
+    const { email } = req.body;
     const otp = generateOtp();
     await sendOTPByEmail(email, otp);
-    await userRepositary.saveOtpInDatabase(userId, otp);
+    const token = jwtUser.generateToken(otp);
+    res.cookie("otp", token);
+
     res.status(200).json({ status: 200, message: "OTP resent successfully" });
   } catch (error) {
     console.error(error);
@@ -143,19 +147,14 @@ const resendOtp = async (
   }
 };
 
+
 const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email, otp, newPassword, confirmPassword } = req.body;
-
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    if (otp !== user.otp) {
-      return res.status(400).json({ message: "Invalid OTP" });
-    }
-
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
@@ -167,24 +166,19 @@ const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
+
+
 const sendOtp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const otp = generateOtp();
-    user.otp = otp;
     await user.save();
     sendOTPByEmail(email, otp);
-
-    setTimeout(async () => {
-      user.otp = undefined;
-      await user.save();
-    }, 3 * 60 * 1000);
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
@@ -193,20 +187,14 @@ const sendOtp = async (req: Request, res: Response) => {
   }
 };
 
-
-const getTurf=async(req:Request,res:Response)=>{
-        try {
-          const turf=await userRepositary.turfGet()
-          res.status(200).json(turf)
-        } catch (error) {
-          res.status(500).json({message:'Internal server error'})
-        }
-}
-
-
-
-
-
+const getTurf = async (req: Request, res: Response) => {
+  try {
+    const turf = await userRepositary.turfGet();
+    res.status(200).json(turf);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export default {
   signup,
@@ -215,5 +203,5 @@ export default {
   resendOtp,
   forgotPassword,
   sendOtp,
-  getTurf
+  getTurf,
 };

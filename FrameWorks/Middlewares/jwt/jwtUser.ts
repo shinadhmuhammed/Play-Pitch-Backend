@@ -37,6 +37,19 @@ const generateToken=(id:string)=>{
       return jwt.sign({id},secretKey,{expiresIn:'1h'})
 }
 
+
+const verifyToken = (token: string): string | null => {
+  const secretKey = "Hello@123!";
+  try {
+    const decoded = jwt.verify(token, secretKey) as { otp: string };
+    return decoded.otp;
+  } catch (error) {
+    return null;
+  }
+};
+
+
+
 export default{
-   JwtUser,generateToken
+   JwtUser,generateToken,verifyToken
 }
