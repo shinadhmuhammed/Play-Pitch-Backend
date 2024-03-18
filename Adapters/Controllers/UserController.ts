@@ -99,7 +99,6 @@ const verifyOtp = async (
     console.log("Received OTP verification request");
 
     const { otp } = req.body;
-    console.log(req.body, "req.bodyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
 
     const token = req.cookies.otp;
     console.log("Received OTP token:", token);
@@ -151,6 +150,7 @@ const resendOtp = async (
 const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email, otp, newPassword, confirmPassword } = req.body;
+    console.log(req.body,'haihellooooooooooooo')
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -179,13 +179,37 @@ const sendOtp = async (req: Request, res: Response) => {
     const otp = generateOtp();
     await user.save();
     sendOTPByEmail(email, otp);
-
+    const token = jwtUser.generateToken(otp);
+    res.cookie("forgotOtp",token)
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const verifyForgot=async(req:Request,res:Response)=>{
+    try {
+      const {otp}=req.body
+      console.log(req.body)
+      const token=req.cookies.forgotOtp;
+      console.log('recieved token',token)
+      const jwtfogotOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
+      console.log(jwtfogotOtp)
+      if(typeof jwtfogotOtp=== 'string' ){
+        res.status(400).json({status:400,message:'invalid or expired token'})
+        return
+      }
+      if(otp === jwtfogotOtp.id){
+        res.status(200).json({status:200,message:"otp verified successfully"})
+      } else {
+        return res.status(400).json({ status: 400, message: 'Invalid OTP' });
+    }
+    } catch (error) {
+      res.status(500).json({status:500,message:'internal server error'})
+    }
+}
+
 
 const getTurf = async (req: Request, res: Response) => {
   try {
@@ -204,4 +228,5 @@ export default {
   forgotPassword,
   sendOtp,
   getTurf,
+  verifyForgot
 };
