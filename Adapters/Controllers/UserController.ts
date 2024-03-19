@@ -14,6 +14,7 @@ import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 
+
 try {
 } catch (error) {}
 
@@ -34,6 +35,9 @@ interface signupSubmitResponse {
   message: string;
 }
 
+
+
+
 const signup = async (
   req: Request<{}, {}, ReqBody>,
   res: Response<signupSubmitResponse>
@@ -42,10 +46,10 @@ const signup = async (
     const otp = generateOtp();
     console.log(otp, "otpppppppppp");
     await sendOTPByEmail(req.body.email, otp);
-
     const token = jwtUser.generateToken(otp);
     console.log(token, "tokennnnnnnnnnnnnnsssssssss");
-    res.cookie("otp", token);
+    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+
 
     res.status(201).json({ status: 201, message: "User created successfully" });
   } catch (error) {
@@ -76,7 +80,8 @@ const login = async (
       if (verifyUser.isBlocked) {
         res.status(403).json({ status: 403, message: "user is blocked" });
       } else {
-        const token = JwtUser.generateToken(verifyUser._id.toString());
+        const role = verifyUser.role;
+        const token = JwtUser.generateToken(verifyUser._id.toString(),role);
         console.log(token, "tokennnnnnnnnnn");
         res
           .status(200)
@@ -137,8 +142,7 @@ const resendOtp = async (
     const otp = generateOtp();
     await sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
-    res.cookie("otp", token);
-
+    res.cookie("otp", token,{expires:new Date(Date.now()+180000)});
     res.status(200).json({ status: 200, message: "OTP resent successfully" });
   } catch (error) {
     console.error(error);
@@ -191,9 +195,7 @@ const sendOtp = async (req: Request, res: Response) => {
 const verifyForgot=async(req:Request,res:Response)=>{
     try {
       const {otp}=req.body
-      console.log(req.body)
       const token=req.cookies.forgotOtp;
-      console.log('recieved token',token)
       const jwtfogotOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
       console.log(jwtfogotOtp)
       if(typeof jwtfogotOtp=== 'string' ){

@@ -41,6 +41,7 @@ const createNewUser = async (user: ReqBody) => {
 
 
 type User = {
+    role: string
     _id: ObjectId;
     username?: string | null; 
     email: string;
@@ -59,7 +60,7 @@ export const verifyLogin = async (user: ReqBody): Promise<User | false> => {
             const passwordMatch = await bcrypt.compare(user.password, userDetails.password);
             if (passwordMatch) {
                 const { _id, email, password, isBlocked } = userDetails;
-                return { _id, email, password, isBlocked };
+                return { _id, email, password, isBlocked,role:'user' };
             } else {
                 return false; 
             }

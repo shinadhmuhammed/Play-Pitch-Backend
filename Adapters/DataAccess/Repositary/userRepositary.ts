@@ -26,25 +26,6 @@ const getOtp=async(userId:string)=>{
 
 
 
-const saveOtpInDatabase = async (userId: string, otp: string) => {
-    try {
-        const existingOtp = await Otp.findOne({ userId: userId });
-        if (existingOtp) {
-            existingOtp.otp = otp;
-            await existingOtp.save();
-        } else {
-            const newOtp = new Otp({
-                userId: userId,
-                otp: otp,
-                createAt: new Date(),
-            });
-            await newOtp.save();
-        }
-    } catch (error) {
-        console.error("Error saving OTP in the database:", error);
-        throw error;
-    }
-};
 
 
 
@@ -67,5 +48,5 @@ const saveOtpInDatabase = async (userId: string, otp: string) => {
 
 
 export default {
-    findUser,getOtp,saveOtpInDatabase,turfGet
+    findUser,getOtp,turfGet
 }
