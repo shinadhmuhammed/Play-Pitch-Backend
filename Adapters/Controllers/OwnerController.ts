@@ -1,11 +1,13 @@
 import { Request, Response } from "express";
 import ownerRepositary from "../DataAccess/Repositary/ownerRepositary";
 import ownerService from "../../Business/services/ownerService";
-import Owner from "../DataAccess/Models/Turfowner";
 import sendOTPByEmail, { generateOtp } from "../../Business/utils/nodemailer";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
-
-
+import jwtOwner from "../../FrameWorks/Middlewares/jwt/jwtOwner";
+import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import Owner from "../DataAccess/Models/Turfowner";
 
 interface Ownersignup {
   email: string;
@@ -26,34 +28,12 @@ const signup = async (
 ) => {
   try {
     const { email, phone, password } = req.body;
-    console.log(req.body);
+
     const otp = generateOTP().toString();
-    await ownerRepositary.saveOtp(email, otp);
     await sendOTPByEmail(email, otp);
-
-    if (!password) {
-      return res
-        .status(400)
-        .json({ status: 400, message: "Password is required" });
-    }
-
-    const existingOwner = await ownerRepositary.findOwner(email);
-    if (existingOwner) {
-      return res
-        .status(400)
-        .json({ status: 400, message: "Email or phone already exists" });
-    }
-
-    const hashedPassword = await ownerService.passwordBcrypt(password);
-
-    const newOwner = new Owner({
-      email,
-      phone,
-      password: hashedPassword,
-      otp: otp,
-    });
-    await newOwner.save();
-
+    const token = jwtOwner.generateToken(otp);
+    console.log("hello en chellam", token);
+    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res
       .status(201)
       .json({ status: 201, message: "Owner registered successfully" });
@@ -69,23 +49,27 @@ function generateOTP() {
 
 const verifyOtp = async (req: Request, res: Response) => {
   try {
-    const { email, otp } = req.body;
-    console.log(email, otp, "helloooooooooooooooooooooo");
-    const owner = await Owner.findOne({ email });
-
-    if (!owner) {
-      return res.status(404).json({ status: 404, message: "Owner not found" });
+    const { otp, email, password, phone } = req.body;
+    console.log(req.body, "hey boooody");
+    console.log(otp, "helloooooooooooooooooooooo");
+    const token = req.cookies.otp;
+    console.log("recieved otp", token);
+    const jwtOtp: JwtPayload | string = jwt.verify(token, "Owner@123");
+    console.log(jwtOtp);
+    if (typeof jwtOtp === "string") {
+      res
+        .status(400)
+        .json({ status: 400, message: "Invalid or expired token" });
+      return;
     }
-
-    if (owner.otp !== otp) {
-      return res.status(400).json({ status: 400, message: "Invalid OTP" });
+    if (otp === jwtOtp.id) {
+      res
+        .status(200)
+        .json({ status: 200, message: "OTP verified successfully" });
+      const newOwner = await ownerService.createNewOwner(req.body);
+    } else {
+      res.status(400).json({ status: 400, message: "Invalid OTP" });
     }
-    owner.otp = undefined;
-    await owner.save();
-
-    return res
-      .status(200)
-      .json({ status: 200, message: "OTP verified successfully" });
   } catch (error) {
     console.error(error);
     return res
@@ -97,10 +81,10 @@ const verifyOtp = async (req: Request, res: Response) => {
 const resendOtp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-    console.log(email, "otpppp");
     const gotp = generateOTP().toString();
-    await ownerRepositary.saveOtp(email, gotp);
     await sendOTPByEmail(email, gotp);
+    const token = jwtOwner.generateToken(gotp);
+    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res.status(200).json({ status: 200, message: "otp resend succesfully" });
   } catch (error) {
     console.log(error);
@@ -123,13 +107,10 @@ const ownerLogin = async (
       password,
       owner.password
     );
-
     if (!isPasswordValid) {
       return res.status(401).json({ status: 401, message: "Invalid password" });
     }
-
     const token = jwtUser.generateToken(owner.id);
-
     res.status(200).json({ status: 200, message: "Login successful", token });
   } catch (error) {
     console.error(error);
@@ -139,18 +120,86 @@ const ownerLogin = async (
   }
 };
 
-
-
-const addTurf = async (req: Request, res: Response) => {
+const passwordForgot = async (req: Request, res: Response) => {
   try {
-      const addTurf=await ownerService.createTurf(req,res)
-      res.status(201).json({ message: "Turf added successfully" });
+    const { email, otp, newPassword, confirmPassword } = req.body;
+    const owner = await Owner.findOne({ email });
+    if (!owner) {
+      return res.status(404).json({ message: "Owner Not Found" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    owner.password = hashedPassword;
+    await owner.save();
+    res.status(204).json({ message: "password changed successfully" });
   } catch (error) {
-      console.error("Error adding turf:", error);
-      res.status(500).json({ message: "Internal server error" });
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
+const ForgotPasswordOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    console.log(email, "heey faris");
+    const owner = await ownerRepositary.findOwner(email);
+    if (!owner) {
+      return res.status(404).json({ message: "owner not found" });
+    }
+    const otp = generateOTP().toString();
+    sendOTPByEmail(email, otp);
+    const token = jwtOwner.generateToken(otp);
+    res.cookie("forgotOtpp", token);
+    res.status(200).json({ message: "otp send successfully" });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
+const verifyForgotOtp = async (req: Request, res: Response) => {
+  try {
+    const { otp } = req.body;
+    console.log(otp);
+    const token = req.cookies.forgotOtpp;
+    console.log(token);
+    const jwtfogot: JwtPayload | string = jwt.verify(token, "Owner@123");
+    console.log(jwtfogot);
 
-export default { signup, verifyOtp, resendOtp, ownerLogin,addTurf };
+    if (typeof jwtfogot === "string") {
+      res
+        .status(400)
+        .json({ status: 400, message: "invalid or expired token" });
+      return;
+    }
+    if (otp === jwtfogot.id) {
+      res
+        .status(200)
+        .json({ status: 200, message: "otp verified successfully" });
+    } else {
+      return res.status(400).json({ status: 400, message: "Invalid OTP" });
+    }
+  } catch (error) {
+    res.status(500).json({ status: 500, message: "internal server error" });
+  }
+};
+
+const addTurf = async (req: Request, res: Response) => {
+  try {
+    const addTurf = await ownerService.createTurf(req, res);
+    res.status(201).json({ message: "Turf added successfully" });
+  } catch (error) {
+    console.error("Error adding turf:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export default {
+  signup,
+  verifyOtp,
+  resendOtp,
+  ownerLogin,
+  addTurf,
+  passwordForgot,
+  ForgotPasswordOtp,
+  verifyForgotOtp,
+};

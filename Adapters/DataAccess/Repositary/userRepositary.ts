@@ -1,6 +1,5 @@
-import {ObjectId} from 'mongodb'
+
 import User from '../Models/UserModel'
-import Otp from '../Models/Otp'
 import Turf from '../Models/turfModel'
 
 
@@ -16,13 +15,7 @@ const findUser=async(email:string)=>{
 
 
 
-const getOtp=async(userId:string)=>{
-        try {
-            return await Otp.findOne({userId:userId})
-        } catch (error) {
-            console.log('OTP not found in the database')
-        }
-}
+
 
 
 
@@ -48,5 +41,5 @@ const getOtp=async(userId:string)=>{
 
 
 export default {
-    findUser,getOtp,turfGet
+    findUser,turfGet
 }

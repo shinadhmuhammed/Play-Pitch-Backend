@@ -8,6 +8,10 @@ interface CustomRequest extends Request {
 
 const JwtUser = async (req: CustomRequest, res: Response, next: NextFunction) => {
     const secretKey = "Hello@123!"
+    
+      if (!secretKey) {
+        return res.status(500).json({ message: "Server error: secret key is not defined" });
+    }
 
     let token;
 

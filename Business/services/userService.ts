@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import User from '../../Adapters/DataAccess/Models/UserModel'
 import userRepositary from '../../Adapters/DataAccess/Repositary/userRepositary'
 import {ObjectId} from 'mongodb'
-import Otp from '../../Adapters/DataAccess/Models/Otp'
+
 
 
 
@@ -85,19 +85,6 @@ interface otp {
   }
 
 
-
-
-  
-
-export const getSavedOtp=async(userId:string)=>{
-        try {
-            const getOtp=await userRepositary.getOtp(userId)
-            console.log(getOtp,'klkklk')
-            if(getOtp) return getOtp
-        } catch (error) {
-            console.log('OTP Not Found')
-        }
-}
 
 
 export const checkUser=async(userId:string)=>{

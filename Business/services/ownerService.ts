@@ -3,13 +3,14 @@ import bcrypt from 'bcrypt'
 import ownerRepositary from '../../Adapters/DataAccess/Repositary/ownerRepositary'
 import { cloudinaryInstance } from '../../FrameWorks/Middlewares/cloudinary';
 import Turf from '../../Adapters/DataAccess/Models/turfModel';
+import Owner from '../../Adapters/DataAccess/Models/Turfowner';
 
 
 interface Ownersignup {
     email: string;
     phone: string;
     password: string;
-    otp?: string;
+    confirm:string;
   }
   
   interface submitResponse {
@@ -18,15 +19,26 @@ interface Ownersignup {
   }
 
 
-const passwordBcrypt=async(password:string)=>{
-    try {
-        const hashedPassword=await bcrypt.hash(password,10)
-        return hashedPassword
-    } catch (error) {
-        console.log(error)
-        throw error; 
-    }
-}
+  const createNewOwner=async(owner:Ownersignup)=>{
+        try {
+            const hashedPassword=await bcrypt.hash(owner.password,10)
+            owner.password=hashedPassword
+            const existingOwner=await ownerRepositary.findOwner(owner.email)
+            if(existingOwner){
+                throw new Error('owner already exists')
+            }
+            const newOwner=new Owner(owner)
+            await newOwner.save()
+            return {message:'user created'}
+        } catch (error) {
+            console.log(error)
+            return {message:'user not created'}
+        }
+  }
+  
+
+
+
 
 const confirmPassword=async(plainPassword:string,hashedPassword:string):Promise<boolean>=>{
     return await bcrypt.compare(plainPassword, hashedPassword)
@@ -75,4 +87,7 @@ const createTurf = async (req: Request, res: Response) => {
 
 
 
-export default {passwordBcrypt,confirmPassword,createTurf}
+
+
+
+export default {confirmPassword,createTurf,createNewOwner}

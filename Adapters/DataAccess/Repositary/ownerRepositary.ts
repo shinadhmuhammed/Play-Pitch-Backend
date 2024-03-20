@@ -12,12 +12,8 @@ const findOwner=async(email:string)=>{
 }
 
 
-const saveOtp = async (email: string, otp: string) => {
-    try {
-      await Owner.findOneAndUpdate({ email }, { otp });
-    } catch (error) {
-      throw new Error("Error saving OTP to database");
-    }
-  };
 
-export default {findOwner,saveOtp}
+
+
+
+export default {findOwner}

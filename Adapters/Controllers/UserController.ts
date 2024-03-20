@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import {
-  getSavedOtp,
   verifyLogin,
   checkUser,
 } from "../../Business/services/userService";
@@ -44,13 +43,9 @@ const signup = async (
 ) => {
   try {
     const otp = generateOtp();
-    console.log(otp, "otpppppppppp");
     await sendOTPByEmail(req.body.email, otp);
     const token = jwtUser.generateToken(otp);
-    console.log(token, "tokennnnnnnnnnnnnnsssssssss");
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
-
-
     res.status(201).json({ status: 201, message: "User created successfully" });
   } catch (error) {
     console.error(error);
@@ -82,7 +77,6 @@ const login = async (
       } else {
         const role = verifyUser.role;
         const token = JwtUser.generateToken(verifyUser._id.toString(),role);
-        console.log(token, "tokennnnnnnnnnn");
         res
           .status(200)
           .json({ status: 200, message: "Login successful", token });
@@ -101,8 +95,6 @@ const verifyOtp = async (
   res: Response<any, Record<string, any>>
 ) => {
   try {
-    console.log("Received OTP verification request");
-
     const { otp } = req.body;
 
     const token = req.cookies.otp;
@@ -162,7 +154,6 @@ const forgotPassword = async (req: Request, res: Response) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
-
     return res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     console.error("Error resetting password:", error);
