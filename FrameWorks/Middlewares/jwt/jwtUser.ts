@@ -41,7 +41,7 @@ const JwtUser = async (req: CustomRequest, res: Response, next: NextFunction) =>
 
 const generateToken = (id: string, role?: string) => { 
   const secretKey = "Hello@123!"
-  return jwt.sign({ id, role }, secretKey, { expiresIn: '1h' }); // Include role in JWT payload
+  return jwt.sign({ id, role }, secretKey, { expiresIn: '1h' }); 
 }
 
 

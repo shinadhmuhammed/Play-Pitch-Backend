@@ -8,6 +8,7 @@ import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Owner from "../DataAccess/Models/Turfowner";
+import Turf from "../DataAccess/Models/turfModel";
 
 interface Ownersignup {
   email: string;
@@ -31,8 +32,7 @@ const signup = async (
 
     const otp = generateOTP().toString();
     await sendOTPByEmail(email, otp);
-    const token = jwtOwner.generateToken(otp);
-    console.log("hello en chellam", token);
+    const token = jwtOwner.generateTokens(otp);
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res
       .status(201)
@@ -50,8 +50,6 @@ function generateOTP() {
 const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { otp, email, password, phone } = req.body;
-    console.log(req.body, "hey boooody");
-    console.log(otp, "helloooooooooooooooooooooo");
     const token = req.cookies.otp;
     console.log("recieved otp", token);
     const jwtOtp: JwtPayload | string = jwt.verify(token, "Owner@123");
@@ -83,7 +81,7 @@ const resendOtp = async (req: Request, res: Response) => {
     const { email } = req.body;
     const gotp = generateOTP().toString();
     await sendOTPByEmail(email, gotp);
-    const token = jwtOwner.generateToken(gotp);
+    const token = jwtOwner.generateTokens(gotp);
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res.status(200).json({ status: 200, message: "otp resend succesfully" });
   } catch (error) {
@@ -110,7 +108,8 @@ const ownerLogin = async (
     if (!isPasswordValid) {
       return res.status(401).json({ status: 401, message: "Invalid password" });
     }
-    const token = jwtUser.generateToken(owner.id);
+    const role=owner.role || 'owner'
+    const token = jwtOwner.generateTokens(owner._id.toString(),role);
     res.status(200).json({ status: 200, message: "Login successful", token });
   } catch (error) {
     console.error(error);
@@ -119,6 +118,7 @@ const ownerLogin = async (
       .json({ status: 500, message: "Internal Server Error" });
   }
 };
+
 
 const passwordForgot = async (req: Request, res: Response) => {
   try {
@@ -147,7 +147,7 @@ const ForgotPasswordOtp = async (req: Request, res: Response) => {
     }
     const otp = generateOTP().toString();
     sendOTPByEmail(email, otp);
-    const token = jwtOwner.generateToken(otp);
+    const token = jwtOwner.generateTokens(otp);
     res.cookie("forgotOtpp", token);
     res.status(200).json({ message: "otp send successfully" });
   } catch (error) {
@@ -183,7 +183,13 @@ const verifyForgotOtp = async (req: Request, res: Response) => {
   }
 };
 
-const addTurf = async (req: Request, res: Response) => {
+
+
+interface CustomRequest extends Request {
+  id?: string;
+}
+
+const addTurf = async (req: CustomRequest, res: Response) => {
   try {
     const addTurf = await ownerService.createTurf(req, res);
     res.status(201).json({ message: "Turf added successfully" });
@@ -192,6 +198,55 @@ const addTurf = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
+interface CustomRequest extends Request {
+  id?: string; 
+}
+
+const getOwnerTurf = async (req: CustomRequest, res: Response) => {
+  try {
+    const ownerId = req.id;
+    const turfs = await Turf.find({ turfOwner: ownerId });
+    res.status(200).json(turfs);
+  } catch (error) {
+    console.error("Error retrieving owner's turfs:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getOwnerTurfById = async (req:Request, res:Response) => {
+  try {
+    const turfId = req.params.id;
+    const turf = await Turf.findById(turfId);
+    if (!turf) {
+      return res.status(404).json({ message: "Turf not found" });
+    }
+    res.status(200).json(turf);
+  } catch (error) {
+    console.error("Error retrieving turf:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+const editTurf=async(req:Request,res:Response)=>{
+  const {id}=req.params
+  console.log(id,'hey en id chellakutty')
+  const updateTurfData=req.body
+  try {
+    const updatedTurf=await ownerService.editTurf(id,updateTurfData)
+    res.json(updatedTurf)
+    
+  } catch (error) {
+    console.error("Error editing turf:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
+
+
 
 export default {
   signup,
@@ -202,4 +257,7 @@ export default {
   passwordForgot,
   ForgotPasswordOtp,
   verifyForgotOtp,
+  getOwnerTurf,
+  editTurf,
+  getOwnerTurfById
 };

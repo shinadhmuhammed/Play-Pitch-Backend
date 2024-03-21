@@ -37,7 +37,12 @@ const turfSchema=new mongoose.Schema({
     image: {
         type: String, 
         required: true
-    }
+    },
+    turfOwner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Owner', 
+        required: true
+    },
 })
 
 

@@ -1,19 +1,39 @@
 import Owner from "../Models/Turfowner";
+import {ObjectId} from 'mongoose'
+import Turf from "../Models/turfModel";
 
 
 
-const findOwner=async(email:string)=>{
+interface OwnerData {
+    _id: ObjectId;
+    email: string;
+    password:string
+    phone:string
+    role?:string;
+  }
+  
+  const findOwner = async (email: string): Promise<OwnerData | null> => {
     try {
-        const OwnerDatabase=await Owner.findOne({email:email})
-        return OwnerDatabase
+      const OwnerDatabase = await Owner.findOne({ email: email });
+      return OwnerDatabase;
     } catch (error) {
-        console.log(error)
+      console.log(error);
+      return null;
     }
-}
+  };
+
+  const updateTurf=async(id: string,updateTurfData:any)=>{
+    try {
+      const update=await Turf.findByIdAndUpdate(id,updateTurfData,{new:true})
+      return update
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  
 
 
 
 
 
-
-export default {findOwner}
+export default {findOwner,updateTurf}

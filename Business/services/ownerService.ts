@@ -45,7 +45,11 @@ const confirmPassword=async(plainPassword:string,hashedPassword:string):Promise<
 }
 
 
-const createTurf = async (req: Request, res: Response) => {
+interface CustomRequest extends Request {
+    id?: string; 
+}
+
+const createTurf = async (req: CustomRequest, res: Response) => {
     try {
         const {
             turfName,
@@ -75,7 +79,8 @@ const createTurf = async (req: Request, res: Response) => {
             openingTime,
             closingTime,
             price,
-            image: uploadedImage.secure_url 
+            image: uploadedImage.secure_url ,
+            turfOwner: req.id 
         });
     
         await newTurf.save();
@@ -86,8 +91,17 @@ const createTurf = async (req: Request, res: Response) => {
 }
 
 
+const editTurf = async (id: string, updatedTurfData: any) => {
+    try {
+      const updatedTurf = await Turf.findByIdAndUpdate(id, updatedTurfData, { new: true });
+      return updatedTurf;
+    } catch (error) {
+      throw error;
+    }
+  };
 
 
 
 
-export default {confirmPassword,createTurf,createNewOwner}
+
+export default {confirmPassword,createTurf,createNewOwner,editTurf}

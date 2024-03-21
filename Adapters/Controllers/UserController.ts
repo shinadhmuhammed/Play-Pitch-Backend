@@ -75,7 +75,7 @@ const login = async (
       if (verifyUser.isBlocked) {
         res.status(403).json({ status: 403, message: "user is blocked" });
       } else {
-        const role = verifyUser.role;
+        const role = verifyUser.role || 'user'
         const token = JwtUser.generateToken(verifyUser._id.toString(),role);
         res
           .status(200)

@@ -3,6 +3,8 @@ import OwnerController from "../../Adapters/Controllers/OwnerController";
 import multer, { Multer } from "multer";
 
 import upload from "../Middlewares/multer";
+import jwtOwner from "../Middlewares/jwt/jwtOwner";
+
 
 const OwnerRouter = express.Router();
 const multerUpload: Multer = upload;
@@ -14,10 +16,10 @@ OwnerRouter.post("/ownerlogin", OwnerController.ownerLogin);
 OwnerRouter.post("/forgot-password", OwnerController.passwordForgot);
 OwnerRouter.post('/otp-forgot',OwnerController.ForgotPasswordOtp)
 OwnerRouter.post('/verify-forgot',OwnerController.verifyForgotOtp)
-OwnerRouter.post(
-  "/addturf",
-  multerUpload.single("file"),
-  OwnerController.addTurf
-);
+OwnerRouter.post("/addturf",multerUpload.single("file"),jwtOwner.OwnerJwt, OwnerController.addTurf);
+OwnerRouter.get("/getownerturf", jwtOwner.OwnerJwt, OwnerController.getOwnerTurf);
+OwnerRouter.get("/getownerturf/:id", jwtOwner.OwnerJwt, OwnerController.getOwnerTurfById);
+OwnerRouter.put("/editturf/:id",jwtOwner.OwnerJwt, OwnerController.editTurf);
+
 
 export default OwnerRouter;
