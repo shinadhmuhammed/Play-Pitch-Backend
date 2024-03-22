@@ -43,6 +43,10 @@ const turfSchema=new mongoose.Schema({
         ref: 'Owner', 
         required: true
     },
+    isActive: {
+        type: Boolean,
+        default: false 
+    }
 })
 
 

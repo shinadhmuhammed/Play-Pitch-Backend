@@ -5,13 +5,13 @@ import {
   checkUser,
 } from "../../Business/services/userService";
 import createNewUser from "../../Business/services/userService";
-import sendOTPByEmail from "../../Business/utils/nodemailer";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
 import bcrypt from "bcrypt";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
+import nodemailer from "../../Business/utils/nodemailer";
 
 
 try {
@@ -43,7 +43,7 @@ const signup = async (
 ) => {
   try {
     const otp = generateOtp();
-    await sendOTPByEmail(req.body.email, otp);
+    await nodemailer.sendOTPByEmail(req.body.email, otp);
     const token = jwtUser.generateToken(otp);
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res.status(201).json({ status: 201, message: "User created successfully" });
@@ -132,7 +132,7 @@ const resendOtp = async (
   try {
     const { email } = req.body;
     const otp = generateOtp();
-    await sendOTPByEmail(email, otp);
+    await nodemailer.sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
     res.cookie("otp", token,{expires:new Date(Date.now()+180000)});
     res.status(200).json({ status: 200, message: "OTP resent successfully" });
@@ -173,7 +173,7 @@ const sendOtp = async (req: Request, res: Response) => {
 
     const otp = generateOtp();
     await user.save();
-    sendOTPByEmail(email, otp);
+    nodemailer.sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
     res.cookie("forgotOtp",token)
     res.status(200).json({ message: "OTP sent successfully" });

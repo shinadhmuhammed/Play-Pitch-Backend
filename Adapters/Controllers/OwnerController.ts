@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import ownerRepositary from "../DataAccess/Repositary/ownerRepositary";
 import ownerService from "../../Business/services/ownerService";
-import sendOTPByEmail, { generateOtp } from "../../Business/utils/nodemailer";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwtOwner from "../../FrameWorks/Middlewares/jwt/jwtOwner";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import Owner from "../DataAccess/Models/Turfowner";
+import Owner from "../DataAccess/Models/ownerModel";
 import Turf from "../DataAccess/Models/turfModel";
+import nodemailer from "../../Business/utils/nodemailer";
 
 interface Ownersignup {
   email: string;
@@ -31,7 +31,7 @@ const signup = async (
     const { email, phone, password } = req.body;
 
     const otp = generateOTP().toString();
-    await sendOTPByEmail(email, otp);
+    await nodemailer.sendOTPByEmail(email, otp);
     const token = jwtOwner.generateTokens(otp);
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res
@@ -51,7 +51,6 @@ const verifyOtp = async (req: Request, res: Response) => {
   try {
     const { otp, email, password, phone } = req.body;
     const token = req.cookies.otp;
-    console.log("recieved otp", token);
     const jwtOtp: JwtPayload | string = jwt.verify(token, "Owner@123");
     console.log(jwtOtp);
     if (typeof jwtOtp === "string") {
@@ -80,7 +79,7 @@ const resendOtp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
     const gotp = generateOTP().toString();
-    await sendOTPByEmail(email, gotp);
+    await nodemailer.sendOTPByEmail(email, gotp);
     const token = jwtOwner.generateTokens(gotp);
     res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res.status(200).json({ status: 200, message: "otp resend succesfully" });
@@ -146,7 +145,7 @@ const ForgotPasswordOtp = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "owner not found" });
     }
     const otp = generateOTP().toString();
-    sendOTPByEmail(email, otp);
+    nodemailer.sendOTPByEmail(email, otp);
     const token = jwtOwner.generateTokens(otp);
     res.cookie("forgotOtpp", token);
     res.status(200).json({ message: "otp send successfully" });
@@ -244,6 +243,7 @@ const editTurf=async(req:Request,res:Response)=>{
     res.status(500).json({ message: "Server error" });
   }
 }
+
 
 
 

@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import ownerRepositary from '../../Adapters/DataAccess/Repositary/ownerRepositary'
 import { cloudinaryInstance } from '../../FrameWorks/Middlewares/cloudinary';
 import Turf from '../../Adapters/DataAccess/Models/turfModel';
-import Owner from '../../Adapters/DataAccess/Models/Turfowner';
+import Owner from '../../Adapters/DataAccess/Models/ownerModel';
 
 
 interface Ownersignup {
@@ -80,7 +80,8 @@ const createTurf = async (req: CustomRequest, res: Response) => {
             closingTime,
             price,
             image: uploadedImage.secure_url ,
-            turfOwner: req.id 
+            turfOwner: req.id ,
+            isActive:false
         });
     
         await newTurf.save();

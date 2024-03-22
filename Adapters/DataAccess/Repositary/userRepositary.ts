@@ -12,7 +12,7 @@ const findUser = async (email: string) => {
 
 const turfGet = async () => {
   try {
-    const turf = await Turf.find();
+    const turf = await Turf.find({isActive:true});
     return turf;
   } catch (error) {
     console.log(error);

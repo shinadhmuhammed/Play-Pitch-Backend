@@ -1,4 +1,4 @@
-import Owner from "../Models/Turfowner";
+import Owner from "../Models/ownerModel";
 import {ObjectId} from 'mongoose'
 import Turf from "../Models/turfModel";
 

@@ -35,4 +35,31 @@ export const generateOtp = (): string => {
 };
 
 
-export default sendOTPByEmail;
+const sendEmailNotification = async (email: string, message: string, subject: string) => {
+  try {
+      const mailTransporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+              user: "muhammedshinadhmk@gmail.com",
+              pass: "nkqk iaww dqvp upeh",
+          },
+      });
+
+      const mailDetails = {
+          from: "muhammedshinadhmk@gmail.com",
+          to: email,
+          subject: subject,
+          text: message,
+      };
+
+      const send = await mailTransporter.sendMail(mailDetails);
+      if (send) console.log("Email sent successfully");
+      else console.log("Error in sending email");
+  } catch (error) {
+      console.log(error, "Error in sending email");
+  }
+};
+
+
+
+export default {sendOTPByEmail,sendEmailNotification};

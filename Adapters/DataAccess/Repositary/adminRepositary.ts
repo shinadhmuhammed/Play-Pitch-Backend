@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import Admin from "../Models/adminModel";
 import User from "../Models/UserModel";
+import Turf from "../Models/turfModel";
 
 
 const findAdmin=async(email:string)=>{
@@ -30,6 +31,15 @@ const blockunblock=async(email:string,isBlocked:boolean)=>{
         }
 }
 
+const getTurf=async()=>{
+    try {
+        const turf=await Turf.find()
+        return turf
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 
-export default {findAdmin,getusers,blockunblock}
+
+export default {findAdmin,getusers,blockunblock,getTurf}
