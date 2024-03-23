@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import {
   verifyLogin,
@@ -12,6 +12,7 @@ import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import nodemailer from "../../Business/utils/nodemailer";
+import { OAuth2Client } from 'google-auth-library';
 
 
 try {
@@ -213,6 +214,62 @@ const getTurf = async (req: Request, res: Response) => {
   }
 };
 
+
+const client = new OAuth2Client('177535806756-svlq6cabpb3t6l2stnhpf98cavs3jod8.apps.googleusercontent.com');
+
+const googleAuth = async (req: Request, res: Response) => {
+  const { credential } = req.body;
+
+  try {
+   
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: '177535806756-svlq6cabpb3t6l2stnhpf98cavs3jod8.apps.googleusercontent.com',
+    });
+
+  
+    const payload = ticket.getPayload();
+
+    if (!payload) {
+      return res.status(401).json({ error: 'Google authentication failed: Payload is missing' });
+    }
+
+  
+    const userId = payload.sub;
+    const email = payload.email;
+    const name = payload.name;
+
+
+    let user = await User.findOne({ googleId: userId });
+
+    if (!user) {
+      user = new User({
+        googleId: userId,
+        email,
+        name,
+        password: 'defaultPassword', 
+      });
+      await user.save();
+    }
+
+    // Generate a token for the user
+    const token = JwtUser.generateToken(user._id.toString(), 'user');
+
+    // Send the token and user information in the response
+    return res.json({ token, user });
+  } catch (error) {
+    console.error('Google authentication failed:', error);
+    return res.status(401).json({ error: 'Google authentication failed' });
+  }
+};
+
+
+
+
+
+
+
+
 export default {
   signup,
   login,
@@ -221,5 +278,6 @@ export default {
   forgotPassword,
   sendOtp,
   getTurf,
-  verifyForgot
+  verifyForgot,
+  googleAuth
 };
