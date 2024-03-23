@@ -48,14 +48,14 @@ const getAllVenues = async () => {
         const venues = await Turf.aggregate([
             {
                 $lookup: {
-                    from: "ownermodels", // The name of the owner collection
+                    from: "ownermodels", 
                     localField: "turfOwner",
                     foreignField: "_id",
                     as: "owner"
                 }
             },
             {
-                $unwind: "$owner" // Unwind the owner array
+                $unwind: "$owner" 
             },
             {
                 $project: {
@@ -98,4 +98,23 @@ const acceptVenueRequests=async(turfId: any)=>{
     }
 }
 
-export default {adminLogin,blockunblock,getAllVenues,acceptVenueRequests}
+
+
+const declineVenueRequests = async (turfId: any) => {
+    try {
+        const turf = await Turf.findById(turfId);
+        if (!turf) {
+            throw new Error('Turf Not Found');
+        }
+        turf.isDeclined = true; 
+        await turf.save();
+        return turf;
+    } catch (error) {
+        console.log(error, 'Error Declining Turf');
+    }
+}
+
+
+  
+
+export default {adminLogin,blockunblock,getAllVenues,acceptVenueRequests,declineVenueRequests}

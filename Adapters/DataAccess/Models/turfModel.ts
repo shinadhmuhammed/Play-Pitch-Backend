@@ -46,6 +46,10 @@ const turfSchema=new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: false 
+    },
+    isDeclined: {
+        type: Boolean,
+        default: false
     }
 })
 

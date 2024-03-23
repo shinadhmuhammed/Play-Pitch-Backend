@@ -232,7 +232,6 @@ const getOwnerTurfById = async (req:Request, res:Response) => {
 
 const editTurf=async(req:Request,res:Response)=>{
   const {id}=req.params
-  console.log(id,'hey en id chellakutty')
   const updateTurfData=req.body
   try {
     const updatedTurf=await ownerService.editTurf(id,updateTurfData)

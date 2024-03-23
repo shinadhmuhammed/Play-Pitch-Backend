@@ -9,5 +9,6 @@ AdminRouter.get('/getusers',AdminController.getUsers)
 AdminRouter.post('/blockandunblock',AdminController.blockAndUnblock)
 AdminRouter.get('/venuerequest',AdminController.venueRequests)
 AdminRouter.post('/venueaccept',AdminController.venueAccepts)
+AdminRouter.post('/venuedecline',AdminController.venueDecline)
 
 export default AdminRouter

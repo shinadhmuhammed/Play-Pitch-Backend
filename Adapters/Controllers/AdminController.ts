@@ -78,6 +78,23 @@ const venueAccepts = async (req: Request, res: Response) => {
     }
 }
 
+const venueDecline = async (req: Request, res: Response) => {
+  const { turfId, turfOwnerEmail } = req.body;
+  console.log(turfId,turfOwnerEmail,'declineeeeeeeeeee')
+  try {
+    const message = `Your turf with ID ${turfId} has been declined.`;
+    const subject = "Turf Declined Notification";
+    await nodemailer.sendEmailNotification(turfOwnerEmail, message, subject);
+
+    const updatedTurf = await adminService.declineVenueRequests(turfId);
+    res.status(200).json({ message: 'Turf Declined Successfully', updatedTurf });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
 
 
-export default { adminLogin, getUsers, blockAndUnblock, venueRequests,venueAccepts };
+
+
+export default { adminLogin, getUsers, blockAndUnblock, venueRequests,venueAccepts ,venueDecline};
