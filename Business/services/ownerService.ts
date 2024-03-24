@@ -61,15 +61,26 @@ const createTurf = async (req: CustomRequest, res: Response) => {
             closingTime,
             price,
         } = req.body;
-    
-        if (!req.file) {
-            return res.status(400).json({ message: 'Image file is required' });
+
+      
+        if (!req.files || !Array.isArray(req.files)) {
+            return res.status(400).json({ message: 'Image files are required' });
         }
-    
-        const uploadedImage = await cloudinaryInstance.uploader.upload(req.file.path, {
-            upload_preset: 'ml_default'
-        });
-    
+
+        
+        const files = Array.isArray(req.files) ? req.files : [req.files];
+
+        const uploadedImages = [];
+        
+       
+        for (const file of files) {
+            const uploadedImage = await cloudinaryInstance.uploader.upload(file.path, {
+                upload_preset: 'ml_default'
+            });
+            uploadedImages.push(uploadedImage.secure_url);
+        }
+
+      
         const newTurf = new Turf({
             turfName,
             address,
@@ -79,17 +90,25 @@ const createTurf = async (req: CustomRequest, res: Response) => {
             openingTime,
             closingTime,
             price,
-            image: uploadedImage.secure_url ,
-            turfOwner: req.id ,
-            isActive:false
+            images: uploadedImages, 
+            turfOwner: req.id,
+            isActive: false
         });
-    
+
+        
         await newTurf.save();
+
+        res.status(201).json({ message: 'Turf added successfully' });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Internal server error' }); 
+        res.status(500).json({ message: 'Internal server error' });
     }
 }
+
+
+
+
+
 
 
 const editTurf = async (id: string, updatedTurfData: any) => {

@@ -68,9 +68,9 @@ const getAllVenues = async () => {
                     openingTime: 1,
                     closingTime: 1,
                     price: 1,
-                    image: 1,
                     turfOwnerEmail: "$owner.email", 
-                    isActive: 1
+                    isActive: 1,
+                    image: { $arrayElemAt: ["$images", 0] } 
                 }
             }
         ]);
@@ -80,6 +80,7 @@ const getAllVenues = async () => {
         console.log(error);
     }
 };
+
 
   
 

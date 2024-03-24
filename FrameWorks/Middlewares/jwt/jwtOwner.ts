@@ -36,7 +36,6 @@ const OwnerJwt = async (
       };
       req.id = decoded.id;
       req.role = decoded.role;
-      console.log(req.id,req.role,'id machu,role machu')
       next();
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {

@@ -190,8 +190,7 @@ interface CustomRequest extends Request {
 
 const addTurf = async (req: CustomRequest, res: Response) => {
   try {
-    const addTurf = await ownerService.createTurf(req, res);
-    res.status(201).json({ message: "Turf added successfully" });
+    await ownerService.createTurf(req, res); 
   } catch (error) {
     console.error("Error adding turf:", error);
     res.status(500).json({ message: "Internal server error" });
