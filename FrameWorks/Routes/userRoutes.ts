@@ -12,8 +12,9 @@ userRouter.post("/login", UserController.login);
 userRouter.post("/forgotpassword", UserController.forgotPassword);
 userRouter.post("/sendotp", UserController.sendOtp);
 userRouter.post("/verify-forgot", UserController.verifyForgot);
-userRouter.get("/getturf", jwtUser.JwtUser, UserController.getTurf);
 userRouter.post("/google-login", UserController.googleAuth);
+userRouter.get("/getturf", jwtUser.verifyJwtUser, UserController.getTurf);
+
 
 
 export default userRouter;

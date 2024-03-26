@@ -1,16 +1,19 @@
-// import mongoose from "mongoose";
+import mongoose from "mongoose";
+import dotenv from 'dotenv'
+dotenv.config()
 
-// interface CustomError {
-//     message : string
-// }
+const mongoURI: string = process.env.MONGODB_URI || ''; 
 
-// const dbConnect=async()=>{
-//     try {
-//         await mongoose.connect("mongodb+srv://muhammedshinad:*****@playpitch.ncx1nn0.mongodb.net/Playpitch")
-//         console.log("db connected succesfully")
-//     } catch (error) {
-//         console.log('db connection failed')
-//     }
-// }
+mongoose.connect(mongoURI);
 
-// export default dbConnect
+const db = mongoose.connection;
+
+db.once("open", () => {
+  console.log("MongoDB connected successfully");
+});
+
+db.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
+});
+
+export default db;

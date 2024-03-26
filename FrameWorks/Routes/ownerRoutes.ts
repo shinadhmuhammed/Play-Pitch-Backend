@@ -16,10 +16,11 @@ OwnerRouter.post("/ownerlogin", OwnerController.ownerLogin);
 OwnerRouter.post("/forgot-password", OwnerController.passwordForgot);
 OwnerRouter.post('/otp-forgot',OwnerController.ForgotPasswordOtp)
 OwnerRouter.post('/verify-forgot',OwnerController.verifyForgotOtp)
-OwnerRouter.post("/addturf", multerUpload.array("file"), jwtOwner.OwnerJwt, OwnerController.addTurf);
-OwnerRouter.get("/getownerturf", jwtOwner.OwnerJwt, OwnerController.getOwnerTurf);
-OwnerRouter.get("/getownerturf/:id", jwtOwner.OwnerJwt, OwnerController.getOwnerTurfById);
-OwnerRouter.put("/editturf/:id",jwtOwner.OwnerJwt, OwnerController.editTurf);
+OwnerRouter.post("/addturf", multerUpload.array("file"), jwtOwner.verifyOwnerJwt, OwnerController.addTurf);
+OwnerRouter.get("/getownerturf", jwtOwner.verifyOwnerJwt, OwnerController.getOwnerTurf);
+OwnerRouter.get("/getownerturf/:id", jwtOwner.verifyOwnerJwt, OwnerController.getOwnerTurfById);
+OwnerRouter.put("/editturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.editTurf);
+OwnerRouter.delete("/deleteturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.deleteTurf);
 
 
 export default OwnerRouter;

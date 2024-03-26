@@ -120,8 +120,16 @@ const editTurf = async (id: string, updatedTurfData: any) => {
     }
   };
 
+  const turfDelete=async(turfId:string)=>{
+    try {
+        const deleted=await Turf.findByIdAndDelete(turfId)
+    } catch (error) {
+        throw error
+    }
+  }
 
 
 
 
-export default {confirmPassword,createTurf,createNewOwner,editTurf}
+
+export default {confirmPassword,createTurf,createNewOwner,editTurf,turfDelete}

@@ -2,6 +2,9 @@ import bcrypt from 'bcrypt'
 import User from '../../Adapters/DataAccess/Models/UserModel'
 import userRepositary from '../../Adapters/DataAccess/Repositary/userRepositary'
 import {ObjectId} from 'mongodb'
+import { OAuth2Client } from 'google-auth-library';
+import jwtUser from '../../FrameWorks/Middlewares/jwt/jwtUser';
+
 
 
 
@@ -53,7 +56,7 @@ type User = {
 
 
 
-export const verifyLogin = async (user: ReqBody): Promise<User | false> => {
+ const verifyLogin = async (user: ReqBody): Promise<User | false> => {
     try {
         const userDetails = await userRepositary.findUser(user.email);
         if (userDetails !== undefined && userDetails !== null) {
@@ -87,7 +90,7 @@ interface otp {
 
 
 
-export const checkUser=async(userId:string)=>{
+ const checkUser=async(userId:string)=>{
         try {
             const findUser=await userRepositary.findUser(userId)
             if(findUser !== undefined){
@@ -106,9 +109,48 @@ export const checkUser=async(userId:string)=>{
 }
 
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const authenticateWithGoogle = async (credential: string) => {
+  const ticket = await client.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload) {
+    throw new Error('Google authentication failed: Payload is missing');
+  }
+
+  const userId = payload.sub;
+  const email = payload.email;
+  const name = payload.name;
+
+  let user = await User.findOne({ googleId: userId });
+
+  if (!user) {
+    user = new User({
+      googleId: userId,
+      email,
+      name,
+      password: 'defaultPassword',
+    });
+    await user.save();
+  }
+  const token = jwtUser.generateToken(user._id.toString(), 'user');
+  return { token, user };
+};
 
 
 
 
 
-export default createNewUser
+
+
+
+
+
+
+
+
+
+export default {createNewUser,verifyLogin,checkUser,authenticateWithGoogle}

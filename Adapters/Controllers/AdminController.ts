@@ -11,14 +11,13 @@ const adminLogin = async (req: Request, res: Response) => {
     if (admin) {
       const role = admin.role || "admin";
       const token = jwtAdmin.generateToken(admin._id.toString());
-      console.log(token, role);
       res.status(200).json({ message: "Login successful", token });
     } else {
       res.status(401).json({ message: "Invalid email or password" });
     }
   } catch (error) {
     res.status(500).json({ error });
-  }
+  } 
 };
 
 const getUsers = async (req: Request, res: Response) => {

@@ -243,6 +243,17 @@ const editTurf=async(req:Request,res:Response)=>{
 }
 
 
+const deleteTurf=async(req:Request,res:Response)=>{
+  const {id}=req.params
+  try {
+    const deleted=await ownerService.turfDelete(id)
+    res.status(200).json({message:'Turf Deleted Successfully'})
+  } catch (error) {
+    console.log('Error Deleting TUrf')
+    res.status(500).json({message:'Server Error'})
+  }
+}
+
 
 
 
@@ -257,5 +268,6 @@ export default {
   verifyForgotOtp,
   getOwnerTurf,
   editTurf,
-  getOwnerTurfById
+  getOwnerTurfById,
+  deleteTurf
 };

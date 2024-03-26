@@ -1,15 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 interface CustomRequest extends Request {
     id?: string;
     role?: string;
 }
 
-const JwtAdmin = async (req: CustomRequest, res: Response, next: NextFunction) => {
-    const secretKey = "Admin@123!"
+const verifyJwtAdmin = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    const secretKey = process.env.ADMIN_SECRET_KEY;
     
-      if (!secretKey) {
+    if (!secretKey) {
         return res.status(500).json({ message: "Server error: secret key is not defined" });
     }
 
@@ -38,10 +40,12 @@ const JwtAdmin = async (req: CustomRequest, res: Response, next: NextFunction) =
 };
 
 
-
 const generateToken = (id: string, role?: string) => { 
-  const secretKey = "Admin@123!"
-  return jwt.sign({ id, role }, secretKey, { expiresIn: '1h' }); 
-}
+    const secretKey = process.env.ADMIN_SECRET_KEY;
+    if (!secretKey) {
+        throw new Error('Server error: secret key is not defined');
+    }
+    return jwt.sign({ id, role }, secretKey, { expiresIn: '1h' }); 
+};
 
-export default {JwtAdmin,generateToken}
+export default { verifyJwtAdmin, generateToken };

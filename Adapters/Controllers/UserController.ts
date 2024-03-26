@@ -1,10 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
-import {
-  verifyLogin,
-  checkUser,
-} from "../../Business/services/userService";
-import createNewUser from "../../Business/services/userService";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
 import bcrypt from "bcrypt";
@@ -13,7 +8,9 @@ import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import nodemailer from "../../Business/utils/nodemailer";
 import { OAuth2Client } from 'google-auth-library';
-
+import dotenv from 'dotenv'
+import userService from "../../Business/services/userService";
+dotenv.config()
 
 try {
 } catch (error) {}
@@ -71,7 +68,7 @@ const login = async (
   res: Response<loginSubmitResponse>
 ) => {
   try {
-    const verifyUser = await verifyLogin(req.body);
+    const verifyUser = await userService.verifyLogin(req.body);
     if (verifyUser && typeof verifyUser !== "boolean") {
       if (verifyUser.isBlocked) {
         res.status(403).json({ status: 403, message: "user is blocked" });
@@ -83,7 +80,7 @@ const login = async (
           .json({ status: 200, message: "Login successful", token });
       }
     } else {
-      res.status(401).json({ status: 401, message: "Invalid credentials" });
+      res.status(401).json({ status: 401, message: "Invalid Email or Password" });
     }
   } catch (error) {
     console.log(error);
@@ -116,7 +113,7 @@ const verifyOtp = async (
         .status(200)
         .json({ status: 200, message: "OTP verified successfully" });
 
-      const newUser = await createNewUser(req.body);
+      const newUser = await userService.createNewUser(req.body);
     } else {
       res.status(400).json({ status: 400, message: "Invalid OTP" });
     }
@@ -147,7 +144,6 @@ const resendOtp = async (
 const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email, otp, newPassword, confirmPassword } = req.body;
-    console.log(req.body,'haihellooooooooooooo')
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -215,47 +211,13 @@ const getTurf = async (req: Request, res: Response) => {
 };
 
 
-const client = new OAuth2Client('177535806756-svlq6cabpb3t6l2stnhpf98cavs3jod8.apps.googleusercontent.com');
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;
 
   try {
-   
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: '177535806756-svlq6cabpb3t6l2stnhpf98cavs3jod8.apps.googleusercontent.com',
-    });
-
-  
-    const payload = ticket.getPayload();
-
-    if (!payload) {
-      return res.status(401).json({ error: 'Google authentication failed: Payload is missing' });
-    }
-
-  
-    const userId = payload.sub;
-    const email = payload.email;
-    const name = payload.name;
-
-
-    let user = await User.findOne({ googleId: userId });
-
-    if (!user) {
-      user = new User({
-        googleId: userId,
-        email,
-        name,
-        password: 'defaultPassword', 
-      });
-      await user.save();
-    }
-
-    // Generate a token for the user
-    const token = JwtUser.generateToken(user._id.toString(), 'user');
-
-    // Send the token and user information in the response
+    const { token, user } = await userService.authenticateWithGoogle(credential);
     return res.json({ token, user });
   } catch (error) {
     console.error('Google authentication failed:', error);

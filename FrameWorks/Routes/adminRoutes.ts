@@ -1,14 +1,15 @@
 import express from 'express'
 import AdminController from '../../Adapters/Controllers/AdminController'
+import jwtAdmin from '../Middlewares/jwt/jwtAdmin'
 const AdminRouter=express.Router()
 
 
 
 AdminRouter.post('/adminlogin',AdminController.adminLogin)
-AdminRouter.get('/getusers',AdminController.getUsers)
-AdminRouter.post('/blockandunblock',AdminController.blockAndUnblock)
-AdminRouter.get('/venuerequest',AdminController.venueRequests)
-AdminRouter.post('/venueaccept',AdminController.venueAccepts)
-AdminRouter.post('/venuedecline',AdminController.venueDecline)
+AdminRouter.get('/getusers',jwtAdmin.verifyJwtAdmin ,AdminController.getUsers)
+AdminRouter.post('/blockandunblock',jwtAdmin.verifyJwtAdmin,AdminController.blockAndUnblock)
+AdminRouter.get('/venuerequest',jwtAdmin.verifyJwtAdmin,AdminController.venueRequests)
+AdminRouter.post('/venueaccept',jwtAdmin.verifyJwtAdmin,AdminController.venueAccepts)
+AdminRouter.post('/venuedecline',jwtAdmin.verifyJwtAdmin,AdminController.venueDecline)
 
 export default AdminRouter

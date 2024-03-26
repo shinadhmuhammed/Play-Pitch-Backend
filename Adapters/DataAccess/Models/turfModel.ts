@@ -47,7 +47,7 @@ const turfSchema=new mongoose.Schema({
     isDeclined: {
         type: Boolean,
         default: false
-    }
+    },
 })
 
 

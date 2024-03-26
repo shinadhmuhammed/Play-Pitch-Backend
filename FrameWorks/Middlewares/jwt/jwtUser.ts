@@ -1,15 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 interface CustomRequest extends Request {
     id?: string;
     role?: string;
 }
 
-const JwtUser = async (req: CustomRequest, res: Response, next: NextFunction) => {
-    const secretKey = "Hello@123!"
+const verifyJwtUser = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    const secretKey = process.env.USER_SECRET_KEY;
     
-      if (!secretKey) {
+    if (!secretKey) {
         return res.status(500).json({ message: "Server error: secret key is not defined" });
     }
 
@@ -37,26 +39,42 @@ const JwtUser = async (req: CustomRequest, res: Response, next: NextFunction) =>
     }
 };
 
-
-
 const generateToken = (id: string, role?: string) => { 
-  const secretKey = "Hello@123!"
-  return jwt.sign({ id, role }, secretKey, { expiresIn: '1h' }); 
+  const secretKey = process.env.USER_SECRET_KEY;
+  
+  
+  if (!secretKey) {
+      throw new Error('User secret key is not defined');
+  }
+
+  return jwt.sign({ id, role }, secretKey as Secret, { expiresIn: '1h' }); 
+};
+
+interface DecodedToken {
+  id: string;
+  role: string;
 }
 
 
-const verifyToken = (token: string): string | null => {
-  const secretKey = "Hello@123!";
+const verifyToken = (token: string): DecodedToken | null => {
+  const secretKey = process.env.USER_SECRET_KEY as string; 
   try {
-    const decoded = jwt.verify(token, secretKey) as { otp: string };
-    return decoded.otp;
+      const decoded = jwt.verify(token, secretKey) as { id: string; role: string } | undefined;
+      if (decoded && typeof decoded.id === 'string' && typeof decoded.role === 'string') {
+          return decoded;
+      } else {
+          throw new Error('Invalid token format');
+      }
   } catch (error) {
-    return null;
+      return null;
   }
 };
 
 
 
-export default{
-   JwtUser,generateToken,verifyToken
-}
+
+export default {
+    verifyJwtUser,
+    generateToken,
+    verifyToken
+};

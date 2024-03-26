@@ -8,19 +8,18 @@ interface CustomRequest extends Request {
   role?: string;
 }
 
-const OwnerJwt = async (
+const verifyOwnerJwt = async (
   req: CustomRequest,
   res: Response,
   next: NextFunction
 ) => {
-  const secretKey = "Owner@123";
+  const secretKey = process.env.OWNER_SECRET_KEY;
 
   if (!secretKey) {
     return res
       .status(500)
       .json({ message: "Server error: secret key is not defined" });
   }
-
 
   let token;
 
@@ -51,12 +50,12 @@ const OwnerJwt = async (
 };
 
 const generateTokens = (id: string, role?: string) => {
-  const secretKey = "Owner@123";
+  const secretKey = process.env.OWNER_SECRET_KEY as string
   return jwt.sign({ id, role }, secretKey, { expiresIn: "9h" });
 };
 
 const verifyToken = (token: string): string | null => {
-  const secretKey = "Owner@123";
+  const secretKey = process.env.OWNER_SECRET_KEY as string
   try {
     const decoded = jwt.verify(token, secretKey) as { otp: string };
     return decoded.otp;
@@ -65,4 +64,4 @@ const verifyToken = (token: string): string | null => {
   }
 };
 
-export default { OwnerJwt, generateTokens, verifyToken };
+export default { verifyOwnerJwt, generateTokens, verifyToken };
