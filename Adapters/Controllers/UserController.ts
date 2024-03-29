@@ -10,6 +10,8 @@ import nodemailer from "../../Business/utils/nodemailer";
 import { OAuth2Client } from 'google-auth-library';
 import dotenv from 'dotenv'
 import userService from "../../Business/services/userService";
+import Turf from "../DataAccess/Models/turfModel";
+import TurfBooking from "../DataAccess/Models/bookingModel";
 dotenv.config()
 
 try {
@@ -215,7 +217,6 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;
-
   try {
     const { token, user } = await userService.authenticateWithGoogle(credential);
     return res.json({ token, user });
@@ -225,6 +226,62 @@ const googleAuth = async (req: Request, res: Response) => {
   }
 };
 
+
+const getSingleTurf = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const singleTurf = await userService.singTurf(id);
+    res.status(200).json(singleTurf);
+  } catch (error) {
+    console.error('Error fetching turf:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+interface CustomRequest extends Request {
+  id?: string;
+  role?: string;
+}
+
+
+
+const handleBooking = async (req: CustomRequest, res: Response) => {
+  try {
+    const { turfId, date, selectedSlot, turfDetail, paymentMethod } = req.body; 
+    const existingBooking = await TurfBooking.findOne({
+      turfId: turfId,
+      date: date,
+      selectedSlot: selectedSlot,
+    });
+
+    if (existingBooking) {
+      return res.status(400).json({ message: 'Slot is already booked' });
+    }
+
+    if (!paymentMethod) { 
+      return res.status(400).json({ message: 'Please select a payment method' });
+    }
+
+   
+    const newBooking = new TurfBooking({
+      turfId: turfId,
+      turf: turfDetail,
+      date: date,
+      selectedSlot: selectedSlot,
+      userId: req.id,
+      paymentMethod: paymentMethod,
+      bookingStatus: 'requested', 
+    });
+
+    await newBooking.save();
+
+    res.status(200).json({ message: 'Turf booked successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 
 
@@ -241,5 +298,7 @@ export default {
   sendOtp,
   getTurf,
   verifyForgot,
-  googleAuth
+  googleAuth,
+  getSingleTurf,
+  handleBooking
 };

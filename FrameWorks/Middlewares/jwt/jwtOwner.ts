@@ -35,6 +35,7 @@ const verifyOwnerJwt = async (
       };
       req.id = decoded.id;
       req.role = decoded.role;
+      console.log(req.id,req.role,'owners')
       next();
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {

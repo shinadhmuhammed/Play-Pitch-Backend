@@ -18,10 +18,6 @@ const turfSchema=new mongoose.Schema({
         type: String,
         required: true
     },
-    facilities: {
-        type: String,
-        required: true
-    },
     openingTime: {
         type: String,
         required: true
@@ -30,10 +26,19 @@ const turfSchema=new mongoose.Schema({
         type: String,
         required: true
     },
+    facilities: {
+        type: String,
+        required: true
+    },
     price:{
         type:Number,
         required:true
     },
+    courtType: {
+        type: String, 
+        required: true
+    },
+
     images: [{ type: String }],
     turfOwner: {
         type: mongoose.Schema.Types.ObjectId,

@@ -25,7 +25,7 @@ const verifyJwtUser = async (req: CustomRequest, res: Response, next: NextFuncti
         try {
             const decoded = jwt.verify(token, secretKey) as { id: string; role: string };
             req.id = decoded.id;
-            req.role = decoded.role;
+            req.role = decoded.role
             next();
         } catch (error) {
             if (error instanceof jwt.TokenExpiredError) {

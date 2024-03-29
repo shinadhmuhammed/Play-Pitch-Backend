@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import ownerRepositary from "../DataAccess/Repositary/ownerRepositary";
 import ownerService from "../../Business/services/ownerService";
-import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwtOwner from "../../FrameWorks/Middlewares/jwt/jwtOwner";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -9,6 +8,8 @@ import jwt from "jsonwebtoken";
 import Owner from "../DataAccess/Models/ownerModel";
 import Turf from "../DataAccess/Models/turfModel";
 import nodemailer from "../../Business/utils/nodemailer";
+import TurfBooking from "../DataAccess/Models/bookingModel";
+import User from "../DataAccess/Models/UserModel";
 
 interface Ownersignup {
   email: string;
@@ -139,7 +140,6 @@ const passwordForgot = async (req: Request, res: Response) => {
 const ForgotPasswordOtp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
-    console.log(email, "heey faris");
     const owner = await ownerRepositary.findOwner(email);
     if (!owner) {
       return res.status(404).json({ message: "owner not found" });
@@ -255,6 +255,71 @@ const deleteTurf=async(req:Request,res:Response)=>{
 }
 
 
+const getBookingsForTurf = async (req: Request, res: Response) => {
+  try {
+    const turfId = req.params.turfId; 
+    console.log(turfId)
+    const bookings = await TurfBooking.find({ turfId: turfId });
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching turf bookings:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+
+const bookingAccept = async (req: CustomRequest, res: Response) => {
+  try {
+    const { bookingId} = req.body;
+    console.log(bookingId);
+    await TurfBooking.findByIdAndUpdate(bookingId, { bookingStatus: 'confirmed' });
+    const ownerId=req.id
+    console.log(ownerId,'userId')
+    const owner = await Owner.findById(ownerId);
+    const ownerEmail = owner?.email; 
+
+  
+    if (ownerEmail) {
+      const message = 'Your booking request has been accepted.';
+      const subject = 'Booking Confirmation';
+      await nodemailer.sendEmailNotification(ownerEmail, message, subject);
+    } else {
+      console.error('User email not found.');
+    }
+
+    res.status(200).json({ message: 'Booking accepted successfully' });
+  } catch (error) {
+    console.error('Error accepting booking:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+const bookingDecline=async(req:CustomRequest,res:Response)=>{
+  try {
+    const { bookingId} = req.body;
+    console.log(bookingId);
+    await TurfBooking.findByIdAndUpdate(bookingId, { bookingStatus: 'declined' });
+    const ownerId=req.id
+    console.log(ownerId,'userId')
+    const owner = await Owner.findById(ownerId);
+    const ownerEmail = owner?.email; 
+    if (ownerEmail) {
+      const message = 'Your booking request has been declined.';
+      const subject = 'Booking Confirmation';
+      await nodemailer.sendEmailNotification(ownerEmail, message, subject);
+    } else {
+      console.error('User email not found.');
+    }
+
+    res.status(200).json({ message: 'Booking declined successfully' });
+  } catch (error) {
+    console.error('Error accepting booking:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+
 
 
 export default {
@@ -269,5 +334,8 @@ export default {
   getOwnerTurf,
   editTurf,
   getOwnerTurfById,
-  deleteTurf
+  deleteTurf,
+  getBookingsForTurf,
+  bookingAccept,
+  bookingDecline
 };

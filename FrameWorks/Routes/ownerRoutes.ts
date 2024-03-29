@@ -21,6 +21,10 @@ OwnerRouter.get("/getownerturf", jwtOwner.verifyOwnerJwt, OwnerController.getOwn
 OwnerRouter.get("/getownerturf/:id", jwtOwner.verifyOwnerJwt, OwnerController.getOwnerTurfById);
 OwnerRouter.put("/editturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.editTurf);
 OwnerRouter.delete("/deleteturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.deleteTurf);
+OwnerRouter.get("/getbookingsforowner/:turfId", jwtOwner.verifyOwnerJwt, OwnerController.getBookingsForTurf);
+OwnerRouter.post("/bookingaccept", jwtOwner.verifyOwnerJwt, OwnerController.bookingAccept);
+OwnerRouter.post("/bookingdecline", jwtOwner.verifyOwnerJwt, OwnerController.bookingDecline);
+
 
 
 export default OwnerRouter;

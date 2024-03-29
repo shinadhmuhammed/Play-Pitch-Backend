@@ -60,6 +60,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
             openingTime,
             closingTime,
             price,
+            courtType,
         } = req.body;
 
       
@@ -90,6 +91,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
             openingTime,
             closingTime,
             price,
+            courtType,
             images: uploadedImages, 
             turfOwner: req.id,
             isActive: false

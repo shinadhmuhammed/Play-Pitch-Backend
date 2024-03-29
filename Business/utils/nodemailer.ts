@@ -1,5 +1,9 @@
-
 import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const { GMAIL_USER, GMAIL_PASS } = process.env;
 
 const sendOTPByEmail = async (email: string, otp: string) => {
   try {
@@ -7,15 +11,15 @@ const sendOTPByEmail = async (email: string, otp: string) => {
     const mailTransporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "muhammedshinadhmk@gmail.com",
-        pass: "nkqk iaww dqvp upeh",
+        user: GMAIL_USER,
+        pass: GMAIL_PASS,
       },
     });
 
     const msg = `Dear user  OTP to reset your  login  is  ${otp}.Do not share this to any one`;
 
     const mailDetails = {
-      from: "muhammedshinadhmk@gmail.com",
+      from: GMAIL_USER,
       to: email,
       subject: "Turf Booking",
       text: msg,
@@ -29,37 +33,29 @@ const sendOTPByEmail = async (email: string, otp: string) => {
   }
 };
 
-export const generateOtp = (): string => {
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  return otp;
-};
-
-
 const sendEmailNotification = async (email: string, message: string, subject: string) => {
   try {
-      const mailTransporter = nodemailer.createTransport({
-          service: "gmail",
-          auth: {
-              user: "muhammedshinadhmk@gmail.com",
-              pass: "nkqk iaww dqvp upeh",
-          },
-      });
+    const mailTransporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: GMAIL_USER,
+        pass: GMAIL_PASS,
+      },
+    });
 
-      const mailDetails = {
-          from: "muhammedshinadhmk@gmail.com",
-          to: email,
-          subject: subject,
-          text: message,
-      };
+    const mailDetails = {
+      from: GMAIL_USER,
+      to: email,
+      subject: subject,
+      text: message,
+    };
 
-      const send = await mailTransporter.sendMail(mailDetails);
-      if (send) console.log("Email sent successfully");
-      else console.log("Error in sending email");
+    const send = await mailTransporter.sendMail(mailDetails);
+    if (send) console.log("Email sent successfully");
+    else console.log("Error in sending email");
   } catch (error) {
-      console.log(error, "Error in sending email");
+    console.log(error, "Error in sending email");
   }
 };
 
-
-
-export default {sendOTPByEmail,sendEmailNotification};
+export default { sendOTPByEmail, sendEmailNotification };
