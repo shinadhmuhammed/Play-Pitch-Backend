@@ -1,5 +1,5 @@
 import User from "../Models/UserModel";
-import userBooking from "../Models/bookingModel";
+import TurfBooking from "../Models/bookingModel";
 import Turf from "../Models/turfModel";
 
 const findUser = async (email: string) => {
@@ -21,34 +21,46 @@ const turfGet = async () => {
 };
 
 
-const slotSave = async (
-  turfId: string,
-  Date: string,
-  selectedSlot: string,
-  turfName: string,
-  address: string,
-  city: string,
-  price: number
-) => {
-  // try {
-  //   const booking = new userBooking({
-  //     turfId: turfId,
-  //     selectedSlot: selectedSlot,
-  //     turfName: turfName,
-  //     turfAddress: address,
-  //     turfCity: city,
-  //     turfPrice: price,
-  //     date: Date,
-  //   });
-  //   await booking.save();
-  // } catch (error) {
-  //   console.error("Error storing booking:", error);
-  //   throw error;
-  // }
+const booking = async(turfId:string, date:string, startTime:string,endTime:string)=>
+ {
+  try {
+    const bookings= await TurfBooking.findOne({
+      turfId: turfId,
+      date: date,
+      selectedSlot: { $gte: startTime, $lte: endTime }
+    });
+    return bookings
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const slotBooking=async(turfId:string, date:string, startTime:string,endTime:string)=>{
+  try {
+    const existingBooking = await TurfBooking.findOne({
+      turfId: turfId,
+      date: date,
+      selectedSlot: { $gte: startTime, $lte: endTime }
+    });
+    return !existingBooking; 
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 };
+
+
+const bookingSave=async(booking:any)=>{
+  await booking.save()
+}
+
+
+
 
 export default {
   findUser,
   turfGet,
-  slotSave,
+  booking,
+  bookingSave,
+  slotBooking
 };

@@ -1,6 +1,7 @@
 import Owner from "../Models/ownerModel";
 import {ObjectId} from 'mongoose'
 import Turf from "../Models/turfModel";
+import User from "../Models/UserModel";
 
 
 
@@ -30,10 +31,21 @@ interface OwnerData {
       console.log(error)
     }
   }
+
+
+  const acceptId=async(id:string)=>{
+    try {
+      return await User.findById(id)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+  
+
   
 
 
 
 
 
-export default {findOwner,updateTurf}
+export default {findOwner,updateTurf,acceptId}

@@ -10,6 +10,7 @@ import Turf from "../DataAccess/Models/turfModel";
 import nodemailer from "../../Business/utils/nodemailer";
 import TurfBooking from "../DataAccess/Models/bookingModel";
 import User from "../DataAccess/Models/UserModel";
+import userService from "../../Business/services/userService";
 
 interface Ownersignup {
   email: string;
@@ -270,54 +271,29 @@ const getBookingsForTurf = async (req: Request, res: Response) => {
 
 const bookingAccept = async (req: CustomRequest, res: Response) => {
   try {
-    const { bookingId} = req.body;
-    console.log(bookingId);
-    await TurfBooking.findByIdAndUpdate(bookingId, { bookingStatus: 'confirmed' });
-    const ownerId=req.id
-    console.log(ownerId,'userId')
-    const owner = await Owner.findById(ownerId);
-    const ownerEmail = owner?.email; 
-
-  
-    if (ownerEmail) {
-      const message = 'Your booking request has been accepted.';
-      const subject = 'Booking Confirmation';
-      await nodemailer.sendEmailNotification(ownerEmail, message, subject);
-    } else {
-      console.error('User email not found.');
-    }
-
-    res.status(200).json({ message: 'Booking accepted successfully' });
+    const { bookingId, userId } = req.body;
+    const result = await ownerService.acceptBookings(bookingId, userId);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error accepting booking:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'internal server error' });
   }
-};
+}
+
 
 
 const bookingDecline=async(req:CustomRequest,res:Response)=>{
   try {
-    const { bookingId} = req.body;
-    console.log(bookingId);
-    await TurfBooking.findByIdAndUpdate(bookingId, { bookingStatus: 'declined' });
-    const ownerId=req.id
-    console.log(ownerId,'userId')
-    const owner = await Owner.findById(ownerId);
-    const ownerEmail = owner?.email; 
-    if (ownerEmail) {
-      const message = 'Your booking request has been declined.';
-      const subject = 'Booking Confirmation';
-      await nodemailer.sendEmailNotification(ownerEmail, message, subject);
-    } else {
-      console.error('User email not found.');
-    }
-
-    res.status(200).json({ message: 'Booking declined successfully' });
+    const { bookingId, userId } = req.body;
+    const result = await ownerService.declineBooking(bookingId, userId);
+    res.status(200).json(result);
   } catch (error) {
     console.error('Error accepting booking:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: 'internal server error' });
   }
 }
+
+
 
 
 

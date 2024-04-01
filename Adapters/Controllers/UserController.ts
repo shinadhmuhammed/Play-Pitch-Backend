@@ -248,41 +248,40 @@ interface CustomRequest extends Request {
 
 const handleBooking = async (req: CustomRequest, res: Response) => {
   try {
-    const { turfId, date, selectedSlot, turfDetail, paymentMethod } = req.body; 
-    const existingBooking = await TurfBooking.findOne({
-      turfId: turfId,
-      date: date,
-      selectedSlot: selectedSlot,
-    });
-
-    if (existingBooking) {
-      return res.status(400).json({ message: 'Slot is already booked' });
-    }
-
-    if (!paymentMethod) { 
-      return res.status(400).json({ message: 'Please select a payment method' });
-    }
-
-   
-    const newBooking = new TurfBooking({
-      turfId: turfId,
-      turf: turfDetail,
-      date: date,
-      selectedSlot: selectedSlot,
-      userId: req.id,
-      paymentMethod: paymentMethod,
-      bookingStatus: 'requested', 
-    });
-
-    await newBooking.save();
-
-    res.status(200).json({ message: 'Turf booked successfully' });
+    const { turfId, date, selectedStartTime,selectedEndTime, turfDetail, paymentMethod } = req.body; 
+    console.log(req.body,'hey en chellam')
+    const result = await userService.slotBooking(turfId, date, selectedStartTime, selectedEndTime, turfDetail, paymentMethod, req.id);
+    res.status(200).json(result);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
 
+
+
+const getBooking=async(req:CustomRequest,res:Response)=>{
+  try {
+      const userId=req.id
+      console.log(userId,'hellooo')
+      const findBooking=await userService.bookingGet(userId)
+      res.status(200).json(findBooking)
+  } catch (error) {
+    res.status(500).json({message:'internal server error'})
+  }
+}
+
+
+const checkSlotAvailibility=async(req:Request,res:Response)=>{
+  try {
+    const{turfId,date,selectedStartTime,selectedEndTime}=req.body
+    console.log(req.body,'hello')
+      const slot=await userService.slotavailability(turfId,date,selectedStartTime,selectedEndTime)
+      res.status(200).json(slot)
+  } catch (error) {
+    res.status(500).json({message:'Internal Server Error'})
+  }
+}
 
 
 
@@ -300,5 +299,7 @@ export default {
   verifyForgot,
   googleAuth,
   getSingleTurf,
-  handleBooking
+  handleBooking,
+  getBooking,
+  checkSlotAvailibility
 };

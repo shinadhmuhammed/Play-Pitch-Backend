@@ -5,6 +5,7 @@ import { ObjectId } from "mongodb";
 import { OAuth2Client } from "google-auth-library";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import Turf from "../../Adapters/DataAccess/Models/turfModel";
+import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
 
 interface ReqBody {
   userName: string;
@@ -134,17 +135,71 @@ const singTurf = async (id: string) => {
   }
 };
 
+const slotBooking = async (
+  turfId: string,
+  date: string,
+  startTime: string,
+  endTime: string,
+  turfDetail: any,
+  paymentMethod: string,
+  userId: any
+) => {
+  const existingBooking = await userRepositary.booking(
+    turfId,
+    date,
+    startTime,
+    endTime
+  );
+  
 
-const slotBooking=async(turfId:string,Date:string,selectedSlot:string,turfDetail:any)=>{
-    // try {
-    //     const {turfName,address,city,price}=turfDetail
-    //     await userRepositary.slotSave(turfId, Date, selectedSlot,turfDetail)
-    // } catch (error) {
-    //     console.error("Error booking slot:", error);
-    // throw error;
-    // }
+  if (existingBooking) {
+    throw new Error("Slot is already booked");
+  }
+
+  if (!paymentMethod) {
+    throw new Error("Please select a payment method");
+  }
+
+  const newBooking = new TurfBooking({
+    turfId: turfId,
+    turf: turfDetail,
+    date: date,
+    selectedSlot: `${startTime} - ${endTime}`, 
+    userId: userId,
+    paymentMethod: paymentMethod,
+    bookingStatus: "requested",
+  });
+
+  await userRepositary.bookingSave(newBooking);
+
+  return { message: "Turf booked successfully" };
+};
+
+
+
+
+const bookingGet=async(userId:any)=>{
+  try {
+    console.log('klllllllllllllllllllll')
+      const booking=await TurfBooking.find({userId:userId})
+      console.log(booking,'hai')
+      return booking
+  } catch (error) {
+    console.log(error)
+  }
 }
 
+
+
+const slotavailability=async(turfId:string,date:string,selectedStartTime:string,selectedEndTime:string)=>{
+  try {
+  
+      const available=await userRepositary.slotBooking(turfId,date,selectedStartTime,selectedEndTime)
+      return available
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 export default {
   createNewUser,
@@ -152,5 +207,7 @@ export default {
   checkUser,
   authenticateWithGoogle,
   singTurf,
-  slotBooking
+  slotBooking,
+  bookingGet,
+  slotavailability
 };

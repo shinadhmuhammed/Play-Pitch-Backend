@@ -28,7 +28,9 @@ const TurfBookingSchema = new mongoose.Schema({
     type: String,
     enum: ['requested', 'confirmed','declined'], 
     default: 'requested' 
-  }
+  },
+  startTime: String, 
+  endTime: String, 
 });
 
 const TurfBooking = mongoose.model('TurfBooking', TurfBookingSchema);
