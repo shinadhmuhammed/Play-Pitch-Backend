@@ -7,12 +7,12 @@ import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "jsonwebtoken";
 import nodemailer from "../../Business/utils/nodemailer";
-import { OAuth2Client } from 'google-auth-library';
-import dotenv from 'dotenv'
+import { OAuth2Client } from "google-auth-library";
+import dotenv from "dotenv";
 import userService from "../../Business/services/userService";
-import Turf from "../DataAccess/Models/turfModel";
+dotenv.config();
+import Stripe from "stripe";
 import TurfBooking from "../DataAccess/Models/bookingModel";
-dotenv.config()
 
 try {
 } catch (error) {}
@@ -33,9 +33,6 @@ interface signupSubmitResponse {
   status: number;
   message: string;
 }
-
-
-
 
 const signup = async (
   req: Request<{}, {}, ReqBody>,
@@ -75,14 +72,16 @@ const login = async (
       if (verifyUser.isBlocked) {
         res.status(403).json({ status: 403, message: "user is blocked" });
       } else {
-        const role = verifyUser.role || 'user'
-        const token = JwtUser.generateToken(verifyUser._id.toString(),role);
+        const role = verifyUser.role || "user";
+        const token = JwtUser.generateToken(verifyUser._id.toString(), role);
         res
           .status(200)
           .json({ status: 200, message: "Login successful", token });
       }
     } else {
-      res.status(401).json({ status: 401, message: "Invalid Email or Password" });
+      res
+        .status(401)
+        .json({ status: 401, message: "Invalid Email or Password" });
     }
   } catch (error) {
     console.log(error);
@@ -134,14 +133,13 @@ const resendOtp = async (
     const otp = generateOtp();
     await nodemailer.sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
-    res.cookie("otp", token,{expires:new Date(Date.now()+180000)});
+    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
     res.status(200).json({ status: 200, message: "OTP resent successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: 500, message: "Internal server error" });
   }
 };
-
 
 const forgotPassword = async (req: Request, res: Response) => {
   try {
@@ -160,8 +158,6 @@ const forgotPassword = async (req: Request, res: Response) => {
   }
 };
 
-
-
 const sendOtp = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -174,7 +170,7 @@ const sendOtp = async (req: Request, res: Response) => {
     await user.save();
     nodemailer.sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
-    res.cookie("forgotOtp",token)
+    res.cookie("forgotOtp", token);
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP:", error);
@@ -182,26 +178,29 @@ const sendOtp = async (req: Request, res: Response) => {
   }
 };
 
-const verifyForgot=async(req:Request,res:Response)=>{
-    try {
-      const {otp}=req.body
-      const token=req.cookies.forgotOtp;
-      const jwtfogotOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
-      console.log(jwtfogotOtp)
-      if(typeof jwtfogotOtp=== 'string' ){
-        res.status(400).json({status:400,message:'invalid or expired token'})
-        return
-      }
-      if(otp === jwtfogotOtp.id){
-        res.status(200).json({status:200,message:"otp verified successfully"})
-      } else {
-        return res.status(400).json({ status: 400, message: 'Invalid OTP' });
+const verifyForgot = async (req: Request, res: Response) => {
+  try {
+    const { otp } = req.body;
+    const token = req.cookies.forgotOtp;
+    const jwtfogotOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
+    console.log(jwtfogotOtp);
+    if (typeof jwtfogotOtp === "string") {
+      res
+        .status(400)
+        .json({ status: 400, message: "invalid or expired token" });
+      return;
     }
-    } catch (error) {
-      res.status(500).json({status:500,message:'internal server error'})
+    if (otp === jwtfogotOtp.id) {
+      res
+        .status(200)
+        .json({ status: 200, message: "otp verified successfully" });
+    } else {
+      return res.status(400).json({ status: 400, message: "Invalid OTP" });
     }
-}
-
+  } catch (error) {
+    res.status(500).json({ status: 500, message: "internal server error" });
+  }
+};
 
 const getTurf = async (req: Request, res: Response) => {
   try {
@@ -212,20 +211,20 @@ const getTurf = async (req: Request, res: Response) => {
   }
 };
 
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;
   try {
-    const { token, user } = await userService.authenticateWithGoogle(credential);
+    const { token, user } = await userService.authenticateWithGoogle(
+      credential
+    );
     return res.json({ token, user });
   } catch (error) {
-    console.error('Google authentication failed:', error);
-    return res.status(401).json({ error: 'Google authentication failed' });
+    console.error("Google authentication failed:", error);
+    return res.status(401).json({ error: "Google authentication failed" });
   }
 };
-
 
 const getSingleTurf = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -233,60 +232,135 @@ const getSingleTurf = async (req: Request, res: Response) => {
     const singleTurf = await userService.singTurf(id);
     res.status(200).json(singleTurf);
   } catch (error) {
-    console.error('Error fetching turf:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Error fetching turf:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 interface CustomRequest extends Request {
   id?: string;
   role?: string;
 }
 
-
-
 const handleBooking = async (req: CustomRequest, res: Response) => {
   try {
-    const { turfId, date, selectedStartTime,selectedEndTime, turfDetail, paymentMethod } = req.body; 
-    console.log(req.body,'hey en chellam')
-    const result = await userService.slotBooking(turfId, date, selectedStartTime, selectedEndTime, turfDetail, paymentMethod, req.id);
+    console.log("hai");
+    const {
+      turfId,
+      date,
+      selectedStartTime,
+      selectedEndTime,
+      turfDetail,
+      paymentMethod,
+    } = req.body;
+    console.log(
+      turfId,
+      date,
+      selectedStartTime,
+      selectedEndTime,
+      turfDetail,
+      paymentMethod,
+      "haaaaaaaaaaai"
+    );
+    const result = await userService.slotBooking(
+      turfId,
+      date,
+      selectedStartTime,
+      selectedEndTime,
+      turfDetail,
+      paymentMethod,
+      req.id
+    );
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const getBooking = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.id;
+    console.log(userId, "hellooo");
+    const findBooking = await userService.bookingGet(userId);
+    res.status(200).json(findBooking);
+  } catch (error) {
+    res.status(500).json({ message: "internal server error" });
+  }
+};
+
+const checkSlotAvailibility = async (req: Request, res: Response) => {
+  try {
+    const { turfDetail, selectedDate, selectedStartTime, selectedEndTime } =
+      req.body;
+    console.log(
+      "llllllllllllllllllllllll",
+      selectedDate,
+      selectedStartTime,
+      selectedEndTime,
+      "kkkkkkkkkkkkkk"
+    );
+    const turfId = turfDetail._id;
+    const slot = await userService.slotavailability(
+      turfId,
+      selectedDate,
+      selectedStartTime,
+      selectedEndTime
+    );
+    res.status(200).json(slot);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 
 
-const getBooking=async(req:CustomRequest,res:Response)=>{
+const stripePayment = async (req: CustomRequest, res: Response) => {
   try {
-      const userId=req.id
-      console.log(userId,'hellooo')
-      const findBooking=await userService.bookingGet(userId)
-      res.status(200).json(findBooking)
-  } catch (error) {
-    res.status(500).json({message:'internal server error'})
-  }
-}
+    const { totalPrice, selectedDate, selectedStartTime, selectedEndTime, turfDetail } = req.body;
+    console.log(selectedStartTime, selectedEndTime);
 
+    if (!totalPrice || typeof totalPrice !== "number" || totalPrice <= 0) {
+      return res.status(400).json({ message: "Invalid totalPrice" });
+    }
 
-const checkSlotAvailibility=async(req:Request,res:Response)=>{
-  try {
-    const{turfId,date,selectedStartTime,selectedEndTime}=req.body
-    console.log(req.body,'hello')
-      const slot=await userService.slotavailability(turfId,date,selectedStartTime,selectedEndTime)
-      res.status(200).json(slot)
+    const sessionId = await userService.createStripeSession(totalPrice, selectedDate, selectedStartTime, selectedEndTime, turfDetail);
+    res.json({ id: sessionId });
   } catch (error) {
-    res.status(500).json({message:'Internal Server Error'})
+    console.error("Error occurred while processing payment:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 }
 
 
 
-
-
+const stripeBooking = async (req: CustomRequest, res: Response) => {
+  try {
+    console.log("hello");
+    const { selectedStartTime, turfId, date, selectedEndTime } = req.body;
+    console.log(
+      selectedStartTime,
+      turfId,
+      date,
+      selectedEndTime,
+      "kya baath he"
+    );
+    const userId = req.id;
+    const bookingData = {
+      turfId: turfId,
+      date: date,
+      userId: userId,
+      selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
+      paymentMethod: "online",
+    };
+    const createdBooking = await TurfBooking.create(bookingData);
+    console.log("Booking entry created successfully:", createdBooking);
+    res.status(201).json(createdBooking);
+  } catch (error) {
+    console.error("Error occurred while creating booking entry:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export default {
   signup,
@@ -301,5 +375,7 @@ export default {
   getSingleTurf,
   handleBooking,
   getBooking,
-  checkSlotAvailibility
+  checkSlotAvailibility,
+  stripePayment,
+  stripeBooking,
 };

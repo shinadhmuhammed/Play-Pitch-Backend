@@ -6,6 +6,10 @@ import { OAuth2Client } from "google-auth-library";
 import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import Turf from "../../Adapters/DataAccess/Models/turfModel";
 import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
+import Stripe from "stripe";
+import dotenv from 'dotenv'
+dotenv.config()
+
 
 interface ReqBody {
   userName: string;
@@ -180,9 +184,7 @@ const slotBooking = async (
 
 const bookingGet=async(userId:any)=>{
   try {
-    console.log('klllllllllllllllllllll')
       const booking=await TurfBooking.find({userId:userId})
-      console.log(booking,'hai')
       return booking
   } catch (error) {
     console.log(error)
@@ -201,6 +203,49 @@ const slotavailability=async(turfId:string,date:string,selectedStartTime:string,
   }
 }
 
+
+
+
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY environment variable is not defined");
+}
+
+const stripe = new Stripe(
+  process.env.STRIPE_SECRET_KEY
+);
+
+
+const createStripeSession = async (totalPrice: number, selectedDate: string, selectedStartTime: string, selectedEndTime: string, turfDetail: any): Promise<string> => {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: "Turf Booking",
+          },
+          unit_amount: totalPrice * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    mode: "payment",
+    success_url: `http://localhost:5173/booking-verification?turfId=${encodeURIComponent(
+      turfDetail._id
+    )}&date=${encodeURIComponent(
+      selectedDate
+    )}&selectedStartTime=${encodeURIComponent(
+      selectedStartTime
+    )}&selectedEndTime=${encodeURIComponent(
+      selectedEndTime
+    )}&paymentMethod=online`,
+    cancel_url: "http://localhost:5173/booking-cancel",
+  });
+  return session.id;
+};
+
 export default {
   createNewUser,
   verifyLogin,
@@ -209,5 +254,6 @@ export default {
   singTurf,
   slotBooking,
   bookingGet,
-  slotavailability
+  slotavailability,
+  createStripeSession
 };

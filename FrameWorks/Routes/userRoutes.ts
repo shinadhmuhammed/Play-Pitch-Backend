@@ -18,6 +18,8 @@ userRouter.get('/getTurf/:id',jwtUser.verifyJwtUser,UserController.getSingleTurf
 userRouter.post('/handlebooking',jwtUser.verifyJwtUser,UserController.handleBooking)
 userRouter.get('/getbooking',jwtUser.verifyJwtUser,UserController.getBooking)
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)
+userRouter.post('/stripepayment',jwtUser.verifyJwtUser,UserController.stripePayment)
+userRouter.post('/create-booking',jwtUser.verifyJwtUser,UserController.stripeBooking)
 
 
 
