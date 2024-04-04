@@ -253,15 +253,6 @@ const handleBooking = async (req: CustomRequest, res: Response) => {
       turfDetail,
       paymentMethod,
     } = req.body;
-    console.log(
-      turfId,
-      date,
-      selectedStartTime,
-      selectedEndTime,
-      turfDetail,
-      paymentMethod,
-      "haaaaaaaaaaai"
-    );
     const result = await userService.slotBooking(
       turfId,
       date,
@@ -289,17 +280,22 @@ const getBooking = async (req: CustomRequest, res: Response) => {
   }
 };
 
+const getBookingById=async(req:CustomRequest,res:Response)=>{
+  try {
+    const userId=req.id;
+    const bookingId=req.params.bookingId
+    const BookingById=await userService.bookingGetById(userId,bookingId)
+    res.status(200).json(BookingById)
+  } catch (error) {
+    console.log('error')
+    res.status(500).json({message:'internal server error'})
+  }
+}
+
 const checkSlotAvailibility = async (req: Request, res: Response) => {
   try {
     const { turfDetail, selectedDate, selectedStartTime, selectedEndTime } =
       req.body;
-    console.log(
-      "llllllllllllllllllllllll",
-      selectedDate,
-      selectedStartTime,
-      selectedEndTime,
-      "kkkkkkkkkkkkkk"
-    );
     const turfId = turfDetail._id;
     const slot = await userService.slotavailability(
       turfId,
@@ -337,20 +333,26 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
 const stripeBooking = async (req: CustomRequest, res: Response) => {
   try {
     console.log("hello");
-    const { selectedStartTime, turfId, date, selectedEndTime } = req.body;
+    const { selectedStartTime, turfId, date, selectedEndTime,totalPrice } = req.body;
     console.log(
       selectedStartTime,
       turfId,
       date,
       selectedEndTime,
+      totalPrice,
       "kya baath he"
     );
+
+    const currentTime = new Date();
+
     const userId = req.id;
     const bookingData = {
       turfId: turfId,
       date: date,
       userId: userId,
       selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
+      totalPrice:totalPrice,
+      Time:currentTime,
       paymentMethod: "online",
     };
     const createdBooking = await TurfBooking.create(bookingData);
@@ -375,6 +377,7 @@ export default {
   getSingleTurf,
   handleBooking,
   getBooking,
+  getBookingById,
   checkSlotAvailibility,
   stripePayment,
   stripeBooking,

@@ -191,6 +191,23 @@ const bookingGet=async(userId:any)=>{
   }
 }
 
+const bookingGetById=async(userId:any,bookingId:any)=>{
+    try {
+      const booking = await TurfBooking.findOne({ userId: userId, _id: bookingId });
+      if (!booking) {
+        throw new Error("Booking not found");
+      }
+      const turfDetails = await Turf.findOne({ _id: booking.turfId });
+      return { booking, turfDetails };
+    } 
+    catch (error) {
+      console.log(error);
+      throw error; 
+    }
+  }
+  
+
+
 
 
 const slotavailability=async(turfId:string,date:string,selectedStartTime:string,selectedEndTime:string)=>{
@@ -240,11 +257,14 @@ const createStripeSession = async (totalPrice: number, selectedDate: string, sel
       selectedStartTime
     )}&selectedEndTime=${encodeURIComponent(
       selectedEndTime
-    )}&paymentMethod=online`,
+    )}&paymentMethod=online&totalPrice=${encodeURIComponent(
+      totalPrice.toString()
+    )}`,
     cancel_url: "http://localhost:5173/booking-cancel",
   });
   return session.id;
 };
+
 
 export default {
   createNewUser,
@@ -254,6 +274,7 @@ export default {
   singTurf,
   slotBooking,
   bookingGet,
+  bookingGetById,
   slotavailability,
   createStripeSession
 };

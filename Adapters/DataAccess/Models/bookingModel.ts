@@ -19,6 +19,13 @@ const TurfBookingSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  totalPrice:{
+    type:Number,
+    required:true
+  },
+  Time:{
+    type:Date,
+},
   paymentMethod: {
     type: String,
     enum: ['cash', 'online'], 
