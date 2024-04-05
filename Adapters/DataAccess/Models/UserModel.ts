@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    profilePhotoUrl: String,
     isBlocked: {
         type: Boolean,
         default: false

@@ -364,6 +364,9 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
   }
 };
 
+
+
+
 export default {
   signup,
   login,
@@ -381,4 +384,5 @@ export default {
   checkSlotAvailibility,
   stripePayment,
   stripeBooking,
+  getDetails
 };

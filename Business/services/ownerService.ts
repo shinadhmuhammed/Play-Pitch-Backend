@@ -59,9 +59,18 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       closingTime,
       price,
       courtType,
+      latitude,
+      longitude,
     } = req.body;
+    console.log(req.body)
 
-    if (!req.files || !Array.isArray(req.files)) {
+    
+    if (!turfName || !address || !city || !aboutVenue || !facilities || !openingTime || !closingTime || !price || !courtType || !latitude || !longitude) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+ 
+    if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
 
@@ -89,6 +98,8 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       closingTime,
       price,
       courtType,
+      latitude,
+      longitude,
       images: uploadedImages,
       turfOwner: req.id,
       isActive: false,
@@ -102,6 +113,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 const editTurf = async (id: string, updatedTurfData: any) => {
   try {
