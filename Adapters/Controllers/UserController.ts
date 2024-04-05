@@ -272,7 +272,6 @@ const handleBooking = async (req: CustomRequest, res: Response) => {
 const getBooking = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
-    console.log(userId, "hellooo");
     const findBooking = await userService.bookingGet(userId);
     res.status(200).json(findBooking);
   } catch (error) {
@@ -280,17 +279,17 @@ const getBooking = async (req: CustomRequest, res: Response) => {
   }
 };
 
-const getBookingById=async(req:CustomRequest,res:Response)=>{
+const getBookingById = async (req: CustomRequest, res: Response) => {
   try {
-    const userId=req.id;
-    const bookingId=req.params.bookingId
-    const BookingById=await userService.bookingGetById(userId,bookingId)
-    res.status(200).json(BookingById)
+    const userId = req.id;
+    const bookingId = req.params.bookingId;
+    const BookingById = await userService.bookingGetById(userId, bookingId);
+    res.status(200).json(BookingById);
   } catch (error) {
-    console.log('error')
-    res.status(500).json({message:'internal server error'})
+    console.log("error");
+    res.status(500).json({ message: "internal server error" });
   }
-}
+};
 
 const checkSlotAvailibility = async (req: Request, res: Response) => {
   try {
@@ -309,39 +308,39 @@ const checkSlotAvailibility = async (req: Request, res: Response) => {
   }
 };
 
-
-
 const stripePayment = async (req: CustomRequest, res: Response) => {
   try {
-    const { totalPrice, selectedDate, selectedStartTime, selectedEndTime, turfDetail } = req.body;
+    const {
+      totalPrice,
+      selectedDate,
+      selectedStartTime,
+      selectedEndTime,
+      turfDetail,
+    } = req.body;
     console.log(selectedStartTime, selectedEndTime);
 
     if (!totalPrice || typeof totalPrice !== "number" || totalPrice <= 0) {
       return res.status(400).json({ message: "Invalid totalPrice" });
     }
 
-    const sessionId = await userService.createStripeSession(totalPrice, selectedDate, selectedStartTime, selectedEndTime, turfDetail);
+    const sessionId = await userService.createStripeSession(
+      totalPrice,
+      selectedDate,
+      selectedStartTime,
+      selectedEndTime,
+      turfDetail
+    );
     res.json({ id: sessionId });
   } catch (error) {
     console.error("Error occurred while processing payment:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-}
-
-
+};
 
 const stripeBooking = async (req: CustomRequest, res: Response) => {
   try {
-    console.log("hello");
-    const { selectedStartTime, turfId, date, selectedEndTime,totalPrice } = req.body;
-    console.log(
-      selectedStartTime,
-      turfId,
-      date,
-      selectedEndTime,
-      totalPrice,
-      "kya baath he"
-    );
+    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } =
+      req.body;
 
     const currentTime = new Date();
 
@@ -351,8 +350,8 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
       date: date,
       userId: userId,
       selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
-      totalPrice:totalPrice,
-      Time:currentTime,
+      totalPrice: totalPrice,
+      Time: currentTime,
       paymentMethod: "online",
     };
     const createdBooking = await TurfBooking.create(bookingData);
@@ -364,7 +363,61 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
   }
 };
 
+const getDetails = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.id;
 
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+    console.log(userId);
+
+    const user = await userService.getUserDetails(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error getting user details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const userDetailsEdit=async(req:CustomRequest,res:Response)=>{
+  try {
+    const userId=req.id
+    const {formData}=req.body
+    console.log(req.body)
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+    const updateUser=await userService.editUserDetails(userId,req.body)
+    res.status(200).json(updateUser)
+  } catch (error) {
+    console.error('Error updating user details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+const resetPassword=async(req:CustomRequest,res:Response)=>{
+  try {
+
+    const newPassword = req.body.password;
+    const userId= req.id;
+
+    if (!userId) {
+      res.status(400).json({ error: 'User ID is missing' });
+      return;
+    }
+    await userService.resetPassword(userId, newPassword);
+    res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 
 export default {
@@ -384,5 +437,7 @@ export default {
   checkSlotAvailibility,
   stripePayment,
   stripeBooking,
-  getDetails
+  getDetails,
+  userDetailsEdit,
+  resetPassword
 };
