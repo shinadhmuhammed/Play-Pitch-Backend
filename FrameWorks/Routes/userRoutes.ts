@@ -21,7 +21,9 @@ userRouter.get('/getbooking/:bookingId',jwtUser.verifyJwtUser,UserController.get
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)
 userRouter.post('/stripepayment',jwtUser.verifyJwtUser,UserController.stripePayment)
 userRouter.post('/create-booking',jwtUser.verifyJwtUser,UserController.stripeBooking)
-
+userRouter.get("/userdetails",jwtUser.verifyJwtUser, UserController.getDetails);
+userRouter.put("/userDetailsEdit",jwtUser.verifyJwtUser, UserController.userDetailsEdit);
+userRouter.post("/reset-password",jwtUser.verifyJwtUser, UserController.resetPassword);
 
 
 

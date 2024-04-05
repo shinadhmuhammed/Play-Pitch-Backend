@@ -210,6 +210,8 @@ const bookingGetById=async(userId:any,bookingId:any)=>{
 
 
 
+
+
 const slotavailability=async(turfId:string,date:string,selectedStartTime:string,selectedEndTime:string)=>{
   try {
   
@@ -265,6 +267,47 @@ const createStripeSession = async (totalPrice: number, selectedDate: string, sel
   return session.id;
 };
 
+const getUserDetails = async (userId: string) => {
+  try {
+    const user = await User.findById(userId);
+    return user;
+  } catch (error) {
+    console.error('Error retrieving user details:', error);
+    throw new Error('Failed to retrieve user details');
+  }
+}
+
+
+const editUserDetails=async(userId: string, userData: any)=>{
+  try {
+    const updatedUser = await User.findByIdAndUpdate(userId, userData, { new: true });
+
+    return updatedUser;
+  } catch (error) {
+    console.error('Error updating user details:', error);
+    throw new Error('Failed to update user details');
+  }
+};
+
+
+const resetPassword=async(userId:string,newPassword:string)=>{
+  try {
+    const hashedPassword: string = await bcrypt.hash(newPassword, 10);
+
+ 
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    user.password = hashedPassword;
+    await user.save();
+  } catch (error) {
+    throw new Error('Error resetting password');
+  }
+};
+
 
 export default {
   createNewUser,
@@ -276,5 +319,8 @@ export default {
   bookingGet,
   bookingGetById,
   slotavailability,
-  createStripeSession
+  createStripeSession,
+  getUserDetails,
+  editUserDetails,
+  resetPassword
 };
