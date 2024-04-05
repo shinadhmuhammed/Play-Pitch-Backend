@@ -384,5 +384,4 @@ export default {
   checkSlotAvailibility,
   stripePayment,
   stripeBooking,
-  getDetails
 };
