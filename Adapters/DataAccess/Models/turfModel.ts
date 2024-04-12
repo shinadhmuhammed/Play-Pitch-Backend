@@ -30,14 +30,15 @@ const turfSchema=new mongoose.Schema({
         type: String,
         required: true
     },
-    price:{
-        type:Number,
-        required:true
-    },
-    courtType: {
-        type: String, 
+    price: {
+        type: mongoose.Schema.Types.Mixed, 
         required: true
-    },
+      },
+    courtType: [{
+        type: String,
+        enum: ['5-aside', '6-aside', '7-aside', '8-aside', '10-aside', '11-aside'],
+        required: true
+      }],
     latitude: {
         type: Number,
         required: true

@@ -19,11 +19,12 @@ OwnerRouter.post('/verify-forgot',OwnerController.verifyForgotOtp)
 OwnerRouter.post("/addturf", multerUpload.array("file"), jwtOwner.verifyOwnerJwt, OwnerController.addTurf);
 OwnerRouter.get("/getownerturf", jwtOwner.verifyOwnerJwt, OwnerController.getOwnerTurf);
 OwnerRouter.get("/getownerturf/:id", jwtOwner.verifyOwnerJwt, OwnerController.getOwnerTurfById);
-OwnerRouter.put("/editturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.editTurf);
+OwnerRouter.put("/editturf/:id",multerUpload.array('file'),jwtOwner.verifyOwnerJwt, OwnerController.editTurf);
 OwnerRouter.delete("/deleteturf/:id",jwtOwner.verifyOwnerJwt, OwnerController.deleteTurf);
 OwnerRouter.get("/getbookingsforowner/:turfId", jwtOwner.verifyOwnerJwt, OwnerController.getBookingsForTurf);
-OwnerRouter.post("/bookingaccept", jwtOwner.verifyOwnerJwt, OwnerController.bookingAccept);
-OwnerRouter.post("/bookingdecline", jwtOwner.verifyOwnerJwt, OwnerController.bookingDecline);
+OwnerRouter.get("/ownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.ownerDetails);
+OwnerRouter.put("/editownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.editOwnerDetails);
+OwnerRouter.post("/change-password", jwtOwner.verifyOwnerJwt, OwnerController.changePassword);
 
 
 

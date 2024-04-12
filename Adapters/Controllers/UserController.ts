@@ -420,6 +420,33 @@ const resetPassword=async(req:CustomRequest,res:Response)=>{
 };
 
 
+const editUserDetails = async (req:CustomRequest, res:Response) => {
+  try {
+    const userId = req.id;
+    console.log(userId,'kkkkkkkkkkkk')
+    const { username, email, phone } = req.body;
+    const profilePhotoUrl = req.file?.path;
+console.log(profilePhotoUrl,'photoooooon')
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { username, email, phone, profilePhotoUrl }, 
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ 
+      message: "User details updated successfully",
+      profilePhotoUrl 
+    });
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 export default {
   signup,
   login,
@@ -439,5 +466,6 @@ export default {
   stripeBooking,
   getDetails,
   userDetailsEdit,
-  resetPassword
+  resetPassword,
+  editUserDetails
 };

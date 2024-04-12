@@ -42,10 +42,29 @@ interface OwnerData {
   }
   
 
+  const getOwnerById=async(ownerId:string)=>{
+    try {
+      const owner=await Owner.findById(ownerId)
+      return owner
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+
+  const editDetails=async(ownerId:string,userData:any)=>{
+    try {
+      const edit=await Owner.findByIdAndUpdate(ownerId,userData,{new:true})
+      return edit
+    } catch (error) {
+      console.log(error)
+    }
+  }
   
 
 
 
 
 
-export default {findOwner,updateTurf,acceptId}
+export default {findOwner,updateTurf,acceptId,getOwnerById,editDetails}

@@ -40,6 +40,17 @@ const getTurf=async()=>{
     }
 }
 
+const getVenueId=async(venueId:string)=>{
+    try {
+        console.log(venueId,'venueIddd')
+        const venue = await Turf.findOne({ _id: venueId });
+        console.log(venue,'hai nageeeesa')
+        return venue
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 
-export default {findAdmin,getusers,blockunblock,getTurf}
+
+export default {findAdmin,getusers,blockunblock,getTurf,getVenueId}

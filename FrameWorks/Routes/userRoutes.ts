@@ -2,6 +2,9 @@ import express from "express";
 const userRouter = express.Router();
 import UserController from "../../Adapters/Controllers/UserController";
 import jwtUser from "../Middlewares/jwt/jwtUser";
+import { Multer } from "multer";
+import upload from "../Middlewares/multer";
+const multerUpload: Multer = upload;
 
 
 
@@ -22,8 +25,9 @@ userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSl
 userRouter.post('/stripepayment',jwtUser.verifyJwtUser,UserController.stripePayment)
 userRouter.post('/create-booking',jwtUser.verifyJwtUser,UserController.stripeBooking)
 userRouter.get("/userdetails",jwtUser.verifyJwtUser, UserController.getDetails);
-userRouter.put("/userDetailsEdit",jwtUser.verifyJwtUser, UserController.userDetailsEdit);
 userRouter.post("/reset-password",jwtUser.verifyJwtUser, UserController.resetPassword);
+userRouter.post("/userDetailsEdit", multerUpload.single("profilePhoto"), jwtUser.verifyJwtUser, UserController.editUserDetails);
+
 
 
 

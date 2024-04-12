@@ -93,7 +93,22 @@ const venueDecline = async (req: Request, res: Response) => {
   }
 }
 
+interface CustomRequest extends Request {
+  id?: string;
+  role?: string;
+}
+
+const getVenueById=async(req:Request,res:Response)=>{
+  try {
+    const venueId=req.params.venueId
+    const VenueById=await adminService.VenueById(venueId)
+    res.status(200).json(VenueById)
+  } catch (error) {
+    res.status(500).json({message:'Internal Server Error'})
+  }
+}
 
 
 
-export default { adminLogin, getUsers, blockAndUnblock, venueRequests,venueAccepts ,venueDecline};
+
+export default { adminLogin, getUsers, blockAndUnblock, venueRequests,venueAccepts ,venueDecline,getVenueById};

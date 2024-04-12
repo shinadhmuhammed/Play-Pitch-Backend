@@ -118,6 +118,17 @@ const declineVenueRequests = async (turfId: any) => {
 }
 
 
+const VenueById=async(venueId:string)=>{
+    try {
+        const venue=await adminRepositary.getVenueId(venueId)
+        return venue
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+
   
 
-export default {adminLogin,blockunblock,getAllVenues,acceptVenueRequests,declineVenueRequests}
+export default {adminLogin,blockunblock,getAllVenues,acceptVenueRequests,declineVenueRequests,VenueById}

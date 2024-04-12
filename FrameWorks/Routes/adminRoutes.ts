@@ -9,7 +9,9 @@ AdminRouter.post('/adminlogin',AdminController.adminLogin)
 AdminRouter.get('/getusers',jwtAdmin.verifyJwtAdmin ,AdminController.getUsers)
 AdminRouter.post('/blockandunblock',jwtAdmin.verifyJwtAdmin,AdminController.blockAndUnblock)
 AdminRouter.get('/venuerequest',jwtAdmin.verifyJwtAdmin,AdminController.venueRequests)
+AdminRouter.get('/venuerequest/:venueId',jwtAdmin.verifyJwtAdmin,AdminController.getVenueById)
 AdminRouter.post('/venueaccept',jwtAdmin.verifyJwtAdmin,AdminController.venueAccepts)
 AdminRouter.post('/venuedecline',jwtAdmin.verifyJwtAdmin,AdminController.venueDecline)
+
 
 export default AdminRouter

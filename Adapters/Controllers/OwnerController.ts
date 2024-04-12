@@ -269,31 +269,58 @@ const getBookingsForTurf = async (req: Request, res: Response) => {
 }
 
 
-const bookingAccept = async (req: CustomRequest, res: Response) => {
+
+
+
+
+const ownerDetails=async(req:CustomRequest,res:Response)=>{
   try {
-    const { bookingId, userId } = req.body;
-    const result = await ownerService.acceptBookings(bookingId, userId);
-    res.status(200).json(result);
+    console.log('started')
+    const ownerId=req.id
+    console.log(ownerId,'owenrid')
+    if (!ownerId) {
+      return res.status(400).json({ error: 'User ID is missing' });
+    }
+    const owner=await ownerService.getOwnerDetails(ownerId)
+    res.status(200).json(owner)
   } catch (error) {
-    console.error('Error accepting booking:', error);
-    res.status(500).json({ message: 'internal server error' });
+    res.status(500).json({ error: "Internal server error" });
   }
 }
 
-
-
-const bookingDecline=async(req:CustomRequest,res:Response)=>{
+const editOwnerDetails=async(req:CustomRequest,res:Response)=>{
   try {
-    const { bookingId, userId } = req.body;
-    const result = await ownerService.declineBooking(bookingId, userId);
-    res.status(200).json(result);
+    const ownerId=req.id
+    const {formData}=req.body
+    if (!ownerId) {
+      return res.status(400).json({ error: 'Owner ID is missing' });
+    }
+    const updateOwner=await ownerService.editDetails(ownerId,req.body)
+    res.status(200).json(updateOwner)
+
   } catch (error) {
-    console.error('Error accepting booking:', error);
-    res.status(500).json({ message: 'internal server error' });
+    console.error('Error updating user details:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
 
-
+const changePassword=async(req:CustomRequest,res:Response)=>{
+  try {
+    console.log('hello')
+    const {newPassword}=req.body
+    console.log(newPassword)
+    const ownerId=req.id
+    console.log(ownerId)
+    if (!ownerId) {
+      res.status(400).json({ error: 'Owner ID is missing' });
+      return;
+    }
+    await ownerService.resetPassword(ownerId,newPassword)
+    res.status(200).json({message:'password reset succesffully'})
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 
 
@@ -312,6 +339,7 @@ export default {
   getOwnerTurfById,
   deleteTurf,
   getBookingsForTurf,
-  bookingAccept,
-  bookingDecline
+  ownerDetails,
+  editOwnerDetails,
+  changePassword
 };

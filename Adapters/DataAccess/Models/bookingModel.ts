@@ -33,8 +33,8 @@ const TurfBookingSchema = new mongoose.Schema({
   },
   bookingStatus: {
     type: String,
-    enum: ['requested', 'confirmed','declined'], 
-    default: 'requested' 
+    enum: [ 'confirmed','declined'], 
+    default: 'confirmed' 
   },
   startTime: String, 
   endTime: String, 

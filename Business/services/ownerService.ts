@@ -47,6 +47,13 @@ interface CustomRequest extends Request {
   id?: string;
 }
 
+
+
+
+interface Prices {
+  [key: string]: string; // Define a string index signature
+}
+
 const createTurf = async (req: CustomRequest, res: Response) => {
   try {
     const {
@@ -57,19 +64,42 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       facilities,
       openingTime,
       closingTime,
-      price,
       courtType,
       latitude,
       longitude,
     } = req.body;
-    console.log(req.body)
 
-    
-    if (!turfName || !address || !city || !aboutVenue || !facilities || !openingTime || !closingTime || !price || !courtType || !latitude || !longitude) {
+    console.log(req.body);
+
+    const prices: Prices = {};
+    courtType.forEach((type: string | number) => {
+      prices[type] = req.body[`${type}-price`];
+    });
+
+    console.log(prices, 'prices');
+    if (
+      !turfName ||
+      !address ||
+      !city ||
+      !aboutVenue ||
+      !facilities ||
+      !openingTime ||
+      !closingTime ||
+      !prices || 
+      !courtType ||
+      !latitude ||
+      !longitude
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
- 
+
+    const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
+
+    if (courtTypes.length === 0) {
+      return res.status(400).json({ message: "Court type is required" });
+    }
+
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
@@ -78,6 +108,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
 
     const uploadedImages = [];
 
+    // Upload images to cloudinary
     for (const file of files) {
       const uploadedImage = await cloudinaryInstance.uploader.upload(
         file.path,
@@ -88,6 +119,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       uploadedImages.push(uploadedImage.secure_url);
     }
 
+    // Create a new Turf document
     const newTurf = new Turf({
       turfName,
       address,
@@ -96,23 +128,39 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       facilities,
       openingTime,
       closingTime,
-      price,
       courtType,
       latitude,
       longitude,
       images: uploadedImages,
       turfOwner: req.id,
       isActive: false,
+      price: {} // Initialize price as an empty object
     });
 
+    // Assign prices for each court type
+    courtTypes.forEach((type: string) => {
+      // Check if the price for the current court type exists
+      if (prices.hasOwnProperty(type)) {
+        newTurf.price[type] = prices[type];
+      } else {
+        // If price is not provided for a court type, you may handle it accordingly
+        // For example, you can set a default price or skip assigning the price
+        // newTurf.price[type] = DEFAULT_PRICE;
+      }
+    });
+
+    // Save the new Turf document to the database
     await newTurf.save();
 
+    // Respond with success message
     res.status(201).json({ message: "Turf added successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 
 const editTurf = async (id: string, updatedTurfData: any) => {
@@ -126,6 +174,7 @@ const editTurf = async (id: string, updatedTurfData: any) => {
   }
 };
 
+
 const turfDelete = async (turfId: string) => {
   try {
     const deleted = await Turf.findByIdAndDelete(turfId);
@@ -134,51 +183,40 @@ const turfDelete = async (turfId: string) => {
   }
 };
 
-const acceptBookings = async (bookingId: string, userId: string) => {
+
+
+
+
+const getOwnerDetails = async (ownerId: string) => {
   try {
-    await TurfBooking.findByIdAndUpdate(bookingId, {
-      bookingStatus: "confirmed",
-    });
-
-    const user = await ownerRepositary.acceptId(userId);
-    const userEmail = user?.email;
-
-    if (userEmail) {
-      const message = "Your booking request has been accepted.";
-      const subject = "Booking Confirmation";
-      await nodemailer.sendEmailNotification(userEmail, message, subject);
-    } else {
-      console.error("User email not found.");
-    }
-
-    return { message: "Booking accepted successfully" };
+    const owner = await ownerRepositary.getOwnerById(ownerId);
+    return owner;
   } catch (error) {
-    console.error("Error accepting booking:", error);
-    throw new Error("Internal server error");
+    console.error("Error retrieving user details:", error);
+    throw new Error("Failed to retrieve user details");
   }
 };
 
-const declineBooking = async (bookingId: string, userId: string) => {
+const editDetails = async (ownerId: string, userData: any) => {
   try {
-    await TurfBooking.findByIdAndUpdate(bookingId, {
-      bookingStatus: "declined",
-    });
-
-    const user = await ownerRepositary.acceptId(userId);
-    const userEmail = user?.email;
-
-    if (userEmail) {
-      const message = "Your booking request has been Declined.";
-      const subject = "Booking Confirmation";
-      await nodemailer.sendEmailNotification(userEmail, message, subject);
-    } else {
-      console.error("User email not found.");
-    }
-
-    return { message: "Booking Declined" };
+    const updateOwner = await ownerRepositary.editDetails(ownerId, userData);
+    return updateOwner;
   } catch (error) {
-    console.error("Error accepting booking:", error);
-    throw new Error("Internal server error");
+    console.error("Error updating owner details:", error);
+  }
+};
+
+const resetPassword = async (ownerId: string, newPassword: string) => {
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const owner = await Owner.findById(ownerId);
+    if (!owner) {
+      throw new Error("Owner not found");
+    }
+    owner.password = hashedPassword;
+    await owner.save();
+  } catch (error) {
+    throw new Error("Error resetting password");
   }
 };
 
@@ -188,6 +226,7 @@ export default {
   createNewOwner,
   editTurf,
   turfDelete,
-  acceptBookings,
-  declineBooking,
+  getOwnerDetails,
+  editDetails,
+  resetPassword,
 };
