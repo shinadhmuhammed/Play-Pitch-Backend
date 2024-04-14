@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 
 const UserSchema = new mongoose.Schema({
-    username: String,
+    username:{ 
+        type:String,
+        required:true
+    },
     email: {
         type: String,
         required: true,
@@ -16,7 +19,23 @@ const UserSchema = new mongoose.Schema({
     isBlocked: {
         type: Boolean,
         default: false
+    },
+    wallet:{
+        default:0,
+        type:Number
+    },
+    walletStatements:[
+        {
+        date:Date,
+        walletType:String,
+        amount:Number,
+        turfName:String,
+        transactionType:{
+            type:String,
+            enum:['debit','credit']
+        }
     }
+]
 });
 
 

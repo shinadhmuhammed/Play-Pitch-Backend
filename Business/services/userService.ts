@@ -7,9 +7,8 @@ import jwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import Turf from "../../Adapters/DataAccess/Models/turfModel";
 import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
 import Stripe from "stripe";
-import dotenv from 'dotenv'
-dotenv.config()
-
+import dotenv from "dotenv";
+dotenv.config();
 
 interface ReqBody {
   userName: string;
@@ -154,7 +153,6 @@ const slotBooking = async (
     startTime,
     endTime
   );
-  
 
   if (existingBooking) {
     throw new Error("Slot is already booked");
@@ -168,7 +166,7 @@ const slotBooking = async (
     turfId: turfId,
     turf: turfDetail,
     date: date,
-    selectedSlot: `${startTime} - ${endTime}`, 
+    selectedSlot: `${startTime} - ${endTime}`,
     userId: userId,
     paymentMethod: paymentMethod,
     bookingStatus: "requested",
@@ -179,63 +177,64 @@ const slotBooking = async (
   return { message: "Turf booked successfully" };
 };
 
-
-
-
-const bookingGet=async(userId:any)=>{
+const bookingGet = async (userId: any) => {
   try {
-      const booking=await TurfBooking.find({userId:userId})
-      return booking
+    const booking = await TurfBooking.find({ userId: userId });
+    return booking;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
-const bookingGetById=async(userId:any,bookingId:any)=>{
-    try {
-      const booking = await TurfBooking.findOne({ userId: userId, _id: bookingId });
-      if (!booking) {
-        throw new Error("Booking not found");
-      }
-      const turfDetails = await Turf.findOne({ _id: booking.turfId });
-      return { booking, turfDetails };
-    } 
-    catch (error) {
-      console.log(error);
-      throw error; 
+const bookingGetById = async (userId: any, bookingId: any) => {
+  try {
+    const booking = await TurfBooking.findOne({
+      userId: userId,
+      _id: bookingId,
+    });
+    if (!booking) {
+      throw new Error("Booking not found");
     }
-  }
-  
-
-
-
-
-
-
-const slotavailability=async(turfId:string,date:string,selectedStartTime:string,selectedEndTime:string)=>{
-  try {
-  
-      const available=await userRepositary.slotBooking(turfId,date,selectedStartTime,selectedEndTime)
-      return available
+    const turfDetails = await Turf.findOne({ _id: booking.turfId });
+    return { booking, turfDetails };
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    throw error;
   }
-}
+};
 
-
-
-
+const slotavailability = async (
+  turfId: string,
+  date: string,
+  selectedStartTime: string,
+  selectedEndTime: string
+) => {
+  try {
+    const available = await userRepositary.slotBooking(
+      turfId,
+      date,
+      selectedStartTime,
+      selectedEndTime
+    );
+    return available;
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY environment variable is not defined");
 }
 
-const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY
-);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-
-const createStripeSession = async (totalPrice: number, selectedDate: string, selectedStartTime: string, selectedEndTime: string, turfDetail: any): Promise<string> => {
+const createStripeSession = async (
+  totalPrice: number,
+  selectedDate: string,
+  selectedStartTime: string,
+  selectedEndTime: string,
+  turfDetail: any
+): Promise<string> => {
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
@@ -272,39 +271,130 @@ const getUserDetails = async (userId: string) => {
     const user = await User.findById(userId);
     return user;
   } catch (error) {
-    console.error('Error retrieving user details:', error);
-    throw new Error('Failed to retrieve user details');
-  }
-}
-
-
-const editUserDetails=async(userId: string, userData: any)=>{
-  try {
-    const updatedUser = await User.findByIdAndUpdate(userId, userData, { new: true });
-
-    return updatedUser;
-  } catch (error) {
-    console.error('Error updating user details:', error);
-    throw new Error('Failed to update user details');
+    console.error("Error retrieving user details:", error);
+    throw new Error("Failed to retrieve user details");
   }
 };
 
+const editUserDetails = async (userId: string, userData: any) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(userId, userData, {
+      new: true,
+    });
 
-const resetPassword=async(userId:string,newPassword:string)=>{
+    return updatedUser;
+  } catch (error) {
+    console.error("Error updating user details:", error);
+    throw new Error("Failed to update user details");
+  }
+};
+
+const resetPassword = async (userId: string, newPassword: string) => {
   try {
     const hashedPassword: string = await bcrypt.hash(newPassword, 10);
 
- 
     const user = await User.findById(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     user.password = hashedPassword;
     await user.save();
   } catch (error) {
-    throw new Error('Error resetting password');
+    throw new Error("Error resetting password");
+  }
+};
+
+const UserCancelBooking = async (id: string) => {
+  try {
+    const cancellationTime = new Date();
+    console.log(cancellationTime, "cancel time");
+    const booking = await TurfBooking.findOneAndUpdate(
+      { _id: id, bookingStatus: "confirmed" },
+      { $set: { bookingStatus: "cancelled" } },
+      { new: true }
+    )
+
+    let refundAmount = 0;
+    if (booking) {
+      const bookingTime = new Date(booking.date);
+      const timeDifference = bookingTime.getTime() - cancellationTime.getTime();
+      const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
+      console.log(hoursDifference, "hoursDifference");
+      console.log(booking.totalPrice, "totalPrice");
+      if (hoursDifference < 1) {
+        refundAmount = 0; 
+      } else if (hoursDifference >= 1 && hoursDifference < 10) {
+        refundAmount = booking.totalPrice / 2; 
+      } else {
+        refundAmount = booking.totalPrice; 
+      }
+    }
+    console.log(refundAmount, "refundamount");
+
+    const user = await User.findById(booking?.userId);
+    // console.log(user,'user')
+    if (user) {
+      user.wallet += refundAmount;
+      console.log(user.wallet, "userwalllllllllllllet");
+      const walletStatement = {
+        date: new Date(),
+        walletType: "refund",
+        amount: refundAmount,
+        transaction: "credit",
+      };
+      user.walletStatements.push(walletStatement);
+      await user.save();
+
+    
+      return booking
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+const bookWithWallet = async (userId: string, selectedStartTime: string, turfId: string, date: string, selectedEndTime: string, totalPrice: number,paymentMethod:string) => {
+  try {
+    const user = await userRepositary.getUserById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.wallet < totalPrice) {
+      throw new Error('Insufficient balance in the wallet');
+    }
+
+    const updatedWalletAmount = user.wallet - totalPrice;
+    if (updatedWalletAmount < 0) {
+      throw new Error('Wallet balance cannot be negative');
+    }
+
+    await userRepositary.updatedWalletBalance(userId, updatedWalletAmount);
+    await userRepositary.recordTransactionInWallet(userId, selectedStartTime, turfId, totalPrice, 'debit');
+
+    const newBooking = new TurfBooking({
+      userId: userId,
+      turfId: turfId,
+      date: date,
+      selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
+      totalPrice: totalPrice,
+      Time: new Date(),
+      paymentMethod: paymentMethod,
+      bookingStatus: 'confirmed',
+      startTime: selectedStartTime,
+      endTime: selectedEndTime
+    });
+
+    await newBooking.save();
+
+    return { message: 'Booking successful' };
+  } catch (error) {
+    console.error('Error occurred while booking with wallet:', error);
+    throw new Error('Failed to book with wallet');
   }
 };
 
@@ -322,5 +412,7 @@ export default {
   createStripeSession,
   getUserDetails,
   editUserDetails,
-  resetPassword
+  resetPassword,
+  UserCancelBooking,
+  bookWithWallet
 };

@@ -317,7 +317,6 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
       selectedEndTime,
       turfDetail,
     } = req.body;
-    console.log(selectedStartTime, selectedEndTime);
 
     if (!totalPrice || typeof totalPrice !== "number" || totalPrice <= 0) {
       return res.status(400).json({ message: "Invalid totalPrice" });
@@ -368,7 +367,7 @@ const getDetails = async (req: CustomRequest, res: Response) => {
     const userId = req.id;
 
     if (!userId) {
-      return res.status(400).json({ error: 'User ID is missing' });
+      return res.status(400).json({ error: "User ID is missing" });
     }
     console.log(userId);
 
@@ -385,52 +384,47 @@ const getDetails = async (req: CustomRequest, res: Response) => {
   }
 };
 
-const userDetailsEdit=async(req:CustomRequest,res:Response)=>{
+const userDetailsEdit = async (req: CustomRequest, res: Response) => {
   try {
-    const userId=req.id
-    const {formData}=req.body
-    console.log(req.body)
+    const userId = req.id;
+    const { formData } = req.body;
+    console.log(req.body);
     if (!userId) {
-      return res.status(400).json({ error: 'User ID is missing' });
+      return res.status(400).json({ error: "User ID is missing" });
     }
-    const updateUser=await userService.editUserDetails(userId,req.body)
-    res.status(200).json(updateUser)
+    const updateUser = await userService.editUserDetails(userId, req.body);
+    res.status(200).json(updateUser);
   } catch (error) {
-    console.error('Error updating user details:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
-
-const resetPassword=async(req:CustomRequest,res:Response)=>{
-  try {
-
-    const newPassword = req.body.password;
-    const userId= req.id;
-
-    if (!userId) {
-      res.status(400).json({ error: 'User ID is missing' });
-      return;
-    }
-    await userService.resetPassword(userId, newPassword);
-    res.json({ message: 'Password reset successful' });
-  } catch (error) {
-    console.error('Error resetting password:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error updating user details:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
+const resetPassword = async (req: CustomRequest, res: Response) => {
+  try {
+    const newPassword = req.body.password;
+    const userId = req.id;
 
-const editUserDetails = async (req:CustomRequest, res:Response) => {
+    if (!userId) {
+      res.status(400).json({ error: "User ID is missing" });
+      return;
+    }
+    await userService.resetPassword(userId, newPassword);
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const editUserDetails = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
-    console.log(userId,'kkkkkkkkkkkk')
     const { username, email, phone } = req.body;
     const profilePhotoUrl = req.file?.path;
-console.log(profilePhotoUrl,'photoooooon')
-
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { username, email, phone, profilePhotoUrl }, 
+      { username, email, phone, profilePhotoUrl },
       { new: true }
     );
 
@@ -438,15 +432,53 @@ console.log(profilePhotoUrl,'photoooooon')
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: "User details updated successfully",
-      profilePhotoUrl 
+      profilePhotoUrl,
     });
   } catch (error) {
     console.error("Error updating user details:", error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+const cancelBooking = async (req: Request, res: Response) => {
+  const { id } = req.body;
+  try {
+    const booking = await userService.UserCancelBooking(id);
+    console.log(booking);
+    res.status(200).json(booking);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+const payWithWallet = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.id;
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is missing' });
+    }
+    const userIdString = String(userId); 
+    console.log(userIdString, 'userIdString');
+
+    const { selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod } = req.body;
+
+    console.log(selectedStartTime,selectedDate,selectedEndTime,totalPrice,paymentMethod,'bodyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
+    const bookingResult = await userService.bookWithWallet(userIdString, selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod);
+    return res.status(200).json({ message: bookingResult.message });
+  } catch (error) {
+    console.error('Error occurred while processing payment with wallet:', error);
+    return res.status(500).json({ message: 'Failed to process payment with wallet' });
+  }
+};
+
+
+
+
+
+
 export default {
   signup,
   login,
@@ -467,5 +499,7 @@ export default {
   getDetails,
   userDetailsEdit,
   resetPassword,
-  editUserDetails
+  editUserDetails,
+  cancelBooking,
+  payWithWallet
 };

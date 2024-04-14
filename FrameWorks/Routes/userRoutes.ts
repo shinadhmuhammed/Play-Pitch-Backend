@@ -23,10 +23,13 @@ userRouter.get('/getbooking',jwtUser.verifyJwtUser,UserController.getBooking)
 userRouter.get('/getbooking/:bookingId',jwtUser.verifyJwtUser,UserController.getBookingById)
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)
 userRouter.post('/stripepayment',jwtUser.verifyJwtUser,UserController.stripePayment)
+userRouter.post('/paywithwallet',jwtUser.verifyJwtUser,UserController.payWithWallet)
 userRouter.post('/create-booking',jwtUser.verifyJwtUser,UserController.stripeBooking)
 userRouter.get("/userdetails",jwtUser.verifyJwtUser, UserController.getDetails);
 userRouter.post("/reset-password",jwtUser.verifyJwtUser, UserController.resetPassword);
 userRouter.post("/userDetailsEdit", multerUpload.single("profilePhoto"), jwtUser.verifyJwtUser, UserController.editUserDetails);
+userRouter.post("/cancelbooking",jwtUser.verifyJwtUser,UserController.cancelBooking)
+
 
 
 

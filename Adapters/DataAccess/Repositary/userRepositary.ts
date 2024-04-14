@@ -55,6 +55,37 @@ const bookingSave=async(booking:any)=>{
 }
 
 
+const updatedWalletBalance = (userId: string, updatedWalletAmount: number) => {
+  return User.findByIdAndUpdate(userId, { $set: { wallet: updatedWalletAmount } });
+}
+
+const getUserById = (userId: string) => {
+  return User.findById(userId);
+}
+
+const recordTransactionInWallet = (userId: string, selectedStartTime: string, turfId: string, amount: number, transactionType: string) => {
+  console.log(transactionType,'yts')
+  const transaction = {
+    date: new Date(),
+    walletType: 'wallet', 
+    amount: amount,
+    turfName: turfId, 
+    transactionType: transactionType 
+  };
+  
+  return User.findByIdAndUpdate(userId, { 
+    $push: { 
+      walletStatements: transaction
+    } 
+  });
+}
+
+
+
+
+
+
+
 
 
 export default {
@@ -62,5 +93,8 @@ export default {
   turfGet,
   booking,
   bookingSave,
-  slotBooking
+  slotBooking,
+  getUserById,
+  updatedWalletBalance,
+  recordTransactionInWallet
 };

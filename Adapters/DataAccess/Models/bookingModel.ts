@@ -28,12 +28,12 @@ const TurfBookingSchema = new mongoose.Schema({
 },
   paymentMethod: {
     type: String,
-    enum: ['cash', 'online'], 
+    enum: ['wallet', 'online'], 
     required: true
   },
   bookingStatus: {
     type: String,
-    enum: [ 'confirmed','declined'], 
+    enum: [ 'confirmed','completed','cancelled'], 
     default: 'confirmed' 
   },
   startTime: String, 

@@ -108,7 +108,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
 
     const uploadedImages = [];
 
-    // Upload images to cloudinary
+  
     for (const file of files) {
       const uploadedImage = await cloudinaryInstance.uploader.upload(
         file.path,
