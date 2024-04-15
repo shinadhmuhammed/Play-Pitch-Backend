@@ -323,6 +323,21 @@ const changePassword=async(req:CustomRequest,res:Response)=>{
 }
 
 
+const cancelBooking=async(req:Request,res:Response)=>{
+  try {
+      const {turfId,bookingId}=req.body
+      console.log(turfId,bookingId)
+      const cancelBooking=await ownerService.ownerCancelBooking(turfId,bookingId)
+      res.status(200).json(cancelBooking)
+  } catch (error) {
+      console.log(error)
+      res.status(500).json({message:"Internal Server Error"})
+  }
+}
+
+
+
+
 
 
 export default {
@@ -341,5 +356,6 @@ export default {
   getBookingsForTurf,
   ownerDetails,
   editOwnerDetails,
-  changePassword
+  changePassword,
+  cancelBooking
 };

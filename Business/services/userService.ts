@@ -8,6 +8,8 @@ import Turf from "../../Adapters/DataAccess/Models/turfModel";
 import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
 import Stripe from "stripe";
 import dotenv from "dotenv";
+import Owner from "../../Adapters/DataAccess/Models/ownerModel";
+import Admin from "../../Adapters/DataAccess/Models/adminModel";
 dotenv.config();
 
 interface ReqBody {
@@ -138,45 +140,6 @@ const singTurf = async (id: string) => {
   }
 };
 
-const slotBooking = async (
-  turfId: string,
-  date: string,
-  startTime: string,
-  endTime: string,
-  turfDetail: any,
-  paymentMethod: string,
-  userId: any
-) => {
-  const existingBooking = await userRepositary.booking(
-    turfId,
-    date,
-    startTime,
-    endTime
-  );
-
-  if (existingBooking) {
-    throw new Error("Slot is already booked");
-  }
-
-  if (!paymentMethod) {
-    throw new Error("Please select a payment method");
-  }
-
-  const newBooking = new TurfBooking({
-    turfId: turfId,
-    turf: turfDetail,
-    date: date,
-    selectedSlot: `${startTime} - ${endTime}`,
-    userId: userId,
-    paymentMethod: paymentMethod,
-    bookingStatus: "requested",
-  });
-
-  await userRepositary.bookingSave(newBooking);
-
-  return { message: "Turf booked successfully" };
-};
-
 const bookingGet = async (userId: any) => {
   try {
     const booking = await TurfBooking.find({ userId: userId });
@@ -266,6 +229,82 @@ const createStripeSession = async (
   return session.id;
 };
 
+const createBookingAndAdjustWallet = async (
+  userId: string,
+  turfId: string,
+  date: Date,
+  selectedStartTime: string,
+  selectedEndTime: string,
+  totalPrice: number
+) => {
+  try {
+    const currentTime = new Date();
+    const bookingData = {
+      turfId: turfId,
+      date: date,
+      userId: userId,
+      selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
+      totalPrice: totalPrice,
+      Time: currentTime,
+      paymentMethod: "online",
+    };
+    const createdBooking = await TurfBooking.create(bookingData);
+
+    // Fetch the turf document
+    const turf = await Turf.findById(turfId);
+    if (!turf) {
+      throw new Error("Turf not found");
+    }
+
+
+    const ownerAmount = totalPrice * 0.9; 
+    const adminAmount = totalPrice * 0.1; 
+
+    const owner = await Owner.findOneAndUpdate(
+      { _id: turf.turfOwner },
+      {
+        $inc: { wallet: ownerAmount },
+        $push: {
+          walletStatements: {
+            date: currentTime,
+            walletType: "wallet",
+            amount: ownerAmount,
+            turfName: turf.turfName,
+            transactionType: "credit",
+          },
+        },
+      },
+      { new: true }
+    );
+
+   
+    const adminEmail = "admin@gmail.com";
+
+    const admin = await Admin.findOneAndUpdate(
+      { email: adminEmail },
+      {
+        $inc: { wallet: adminAmount },
+        $push: {
+          walletStatements: {
+            date: currentTime,
+            walletType: "wallet",
+            amount: adminAmount,
+            turfName: turf.turfName,
+            transactionType: "credit",
+          },
+        },
+      },
+      { new: true }
+    );
+    
+
+    return createdBooking;
+  } catch (error) {
+    throw new Error("Failed to create booking and adjust wallet");
+  }
+};
+
+
 const getUserDetails = async (userId: string) => {
   try {
     const user = await User.findById(userId);
@@ -314,7 +353,7 @@ const UserCancelBooking = async (id: string) => {
       { _id: id, bookingStatus: "confirmed" },
       { $set: { bookingStatus: "cancelled" } },
       { new: true }
-    )
+    );
 
     let refundAmount = 0;
     if (booking) {
@@ -324,11 +363,11 @@ const UserCancelBooking = async (id: string) => {
       console.log(hoursDifference, "hoursDifference");
       console.log(booking.totalPrice, "totalPrice");
       if (hoursDifference < 1) {
-        refundAmount = 0; 
+        refundAmount = 0;
       } else if (hoursDifference >= 1 && hoursDifference < 10) {
-        refundAmount = booking.totalPrice / 2; 
+        refundAmount = booking.totalPrice / 2;
       } else {
-        refundAmount = booking.totalPrice; 
+        refundAmount = booking.totalPrice;
       }
     }
     console.log(refundAmount, "refundamount");
@@ -347,34 +386,45 @@ const UserCancelBooking = async (id: string) => {
       user.walletStatements.push(walletStatement);
       await user.save();
 
-    
-      return booking
+      return booking;
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-
-const bookWithWallet = async (userId: string, selectedStartTime: string, turfId: string, date: string, selectedEndTime: string, totalPrice: number,paymentMethod:string) => {
+const bookWithWallet = async (
+  userId: string,
+  selectedStartTime: string,
+  turfId: string,
+  date: string,
+  selectedEndTime: string,
+  totalPrice: number,
+  paymentMethod: string
+) => {
   try {
     const user = await userRepositary.getUserById(userId);
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     if (user.wallet < totalPrice) {
-      throw new Error('Insufficient balance in the wallet');
+      throw new Error("Insufficient balance in the wallet");
     }
 
     const updatedWalletAmount = user.wallet - totalPrice;
     if (updatedWalletAmount < 0) {
-      throw new Error('Wallet balance cannot be negative');
+      throw new Error("Wallet balance cannot be negative");
     }
 
     await userRepositary.updatedWalletBalance(userId, updatedWalletAmount);
-    await userRepositary.recordTransactionInWallet(userId, selectedStartTime, turfId, totalPrice, 'debit');
+    await userRepositary.recordTransactionInWallet(
+      userId,
+      turfId,
+      totalPrice,
+      "debit"
+    );
 
     const newBooking = new TurfBooking({
       userId: userId,
@@ -384,19 +434,18 @@ const bookWithWallet = async (userId: string, selectedStartTime: string, turfId:
       totalPrice: totalPrice,
       Time: new Date(),
       paymentMethod: paymentMethod,
-      bookingStatus: 'confirmed',
-      startTime: selectedStartTime,
-      endTime: selectedEndTime
+      bookingStatus: "confirmed",
     });
 
     await newBooking.save();
 
-    return { message: 'Booking successful' };
+    return { message: "Booking successful" };
   } catch (error) {
-    console.error('Error occurred while booking with wallet:', error);
-    throw new Error('Failed to book with wallet');
+    console.error("Error occurred while booking with wallet:", error);
+    throw new Error("Failed to book with wallet");
   }
 };
+
 
 
 export default {
@@ -405,14 +454,14 @@ export default {
   checkUser,
   authenticateWithGoogle,
   singTurf,
-  slotBooking,
   bookingGet,
   bookingGetById,
   slotavailability,
   createStripeSession,
+  createBookingAndAdjustWallet,
   getUserDetails,
   editUserDetails,
   resetPassword,
   UserCancelBooking,
-  bookWithWallet
+  bookWithWallet,
 };

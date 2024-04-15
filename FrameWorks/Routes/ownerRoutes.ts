@@ -25,6 +25,8 @@ OwnerRouter.get("/getbookingsforowner/:turfId", jwtOwner.verifyOwnerJwt, OwnerCo
 OwnerRouter.get("/ownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.ownerDetails);
 OwnerRouter.put("/editownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.editOwnerDetails);
 OwnerRouter.post("/change-password", jwtOwner.verifyOwnerJwt, OwnerController.changePassword);
+OwnerRouter.post("/cancelbookings", jwtOwner.verifyOwnerJwt, OwnerController.cancelBooking);
+
 
 
 

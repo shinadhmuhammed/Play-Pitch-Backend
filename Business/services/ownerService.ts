@@ -6,6 +6,7 @@ import Turf from "../../Adapters/DataAccess/Models/turfModel";
 import Owner from "../../Adapters/DataAccess/Models/ownerModel";
 import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
 import nodemailer from "../utils/nodemailer";
+import User from "../../Adapters/DataAccess/Models/UserModel";
 
 interface Ownersignup {
   email: string;
@@ -47,11 +48,8 @@ interface CustomRequest extends Request {
   id?: string;
 }
 
-
-
-
 interface Prices {
-  [key: string]: string; // Define a string index signature
+  [key: string]: string;
 }
 
 const createTurf = async (req: CustomRequest, res: Response) => {
@@ -76,7 +74,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       prices[type] = req.body[`${type}-price`];
     });
 
-    console.log(prices, 'prices');
+    console.log(prices, "prices");
     if (
       !turfName ||
       !address ||
@@ -85,14 +83,13 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       !facilities ||
       !openingTime ||
       !closingTime ||
-      !prices || 
+      !prices ||
       !courtType ||
       !latitude ||
       !longitude
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
 
     const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
 
@@ -108,7 +105,6 @@ const createTurf = async (req: CustomRequest, res: Response) => {
 
     const uploadedImages = [];
 
-  
     for (const file of files) {
       const uploadedImage = await cloudinaryInstance.uploader.upload(
         file.path,
@@ -119,7 +115,6 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       uploadedImages.push(uploadedImage.secure_url);
     }
 
-    // Create a new Turf document
     const newTurf = new Turf({
       turfName,
       address,
@@ -134,7 +129,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       images: uploadedImages,
       turfOwner: req.id,
       isActive: false,
-      price: {} // Initialize price as an empty object
+      price: {},
     });
 
     // Assign prices for each court type
@@ -143,25 +138,16 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       if (prices.hasOwnProperty(type)) {
         newTurf.price[type] = prices[type];
       } else {
-        // If price is not provided for a court type, you may handle it accordingly
-        // For example, you can set a default price or skip assigning the price
         // newTurf.price[type] = DEFAULT_PRICE;
       }
     });
-
-    // Save the new Turf document to the database
     await newTurf.save();
-
-    // Respond with success message
     res.status(201).json({ message: "Turf added successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
-
 
 const editTurf = async (id: string, updatedTurfData: any) => {
   try {
@@ -174,7 +160,6 @@ const editTurf = async (id: string, updatedTurfData: any) => {
   }
 };
 
-
 const turfDelete = async (turfId: string) => {
   try {
     const deleted = await Turf.findByIdAndDelete(turfId);
@@ -182,10 +167,6 @@ const turfDelete = async (turfId: string) => {
     throw error;
   }
 };
-
-
-
-
 
 const getOwnerDetails = async (ownerId: string) => {
   try {
@@ -220,6 +201,77 @@ const resetPassword = async (ownerId: string, newPassword: string) => {
   }
 };
 
+interface OwnerModel extends Document {
+  email: string;
+  phone: string;
+  password: string;
+  wallet: number;
+  walletStatements: Array<{
+    date: Date;
+    walletType: string;
+    amount: number;
+    turfName: string;
+    transactionType: string;
+  }>;
+}
+
+const ownerCancelBooking = async (turfId: string, bookingId: string) => {
+  try {
+    const booking = await TurfBooking.findById({ _id: bookingId });
+    if (booking) {
+      const user = await User.findById(booking.userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const turf = await Turf.findById(turfId);
+      if (!turf) {
+        throw new Error("Turf not found");
+      }
+
+      const owner = await Owner.findOne({ _id: turf.turfOwner });
+      if (!owner) {
+        throw new Error("Owner not found");
+      }
+
+      const totalPrice = booking.totalPrice;
+      owner.wallet -= totalPrice;
+      owner.walletStatements.push({
+        date: new Date(),
+        walletType: "owner",
+        amount: -totalPrice,
+        turfName: turf.turfName,
+        transactionType: "debit",
+      });
+      await owner.save();
+
+      user.wallet += totalPrice;
+      user.walletStatements.push({
+        date: new Date(),
+        walletType: "user",
+        amount: totalPrice,
+        turfName: turf.turfName,
+        transactionType: "credit",
+      });
+      await user.save();
+
+      booking.bookingStatus = "cancelled";
+      await booking.save();
+      const emailMessage = `Sorry, your booking for the turf named ${turf?.turfName} has been cancelled due to some reasons. Your refunded amount will be credited to your wallet shortly.`;
+      const emailSubject = "Booking Cancellation Notification";
+      if (user) {
+        await nodemailer.sendEmailNotification(
+          user.email,
+          emailMessage,
+          emailSubject
+        );
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export default {
   confirmPassword,
   createTurf,
@@ -229,4 +281,5 @@ export default {
   getOwnerDetails,
   editDetails,
   resetPassword,
+  ownerCancelBooking,
 };

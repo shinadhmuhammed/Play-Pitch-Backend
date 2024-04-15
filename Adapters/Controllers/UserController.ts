@@ -242,32 +242,7 @@ interface CustomRequest extends Request {
   role?: string;
 }
 
-const handleBooking = async (req: CustomRequest, res: Response) => {
-  try {
-    console.log("hai");
-    const {
-      turfId,
-      date,
-      selectedStartTime,
-      selectedEndTime,
-      turfDetail,
-      paymentMethod,
-    } = req.body;
-    const result = await userService.slotBooking(
-      turfId,
-      date,
-      selectedStartTime,
-      selectedEndTime,
-      turfDetail,
-      paymentMethod,
-      req.id
-    );
-    res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
+
 
 const getBooking = async (req: CustomRequest, res: Response) => {
   try {
@@ -338,29 +313,31 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
 
 const stripeBooking = async (req: CustomRequest, res: Response) => {
   try {
-    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } =
-      req.body;
+    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } = req.body;
+    
+    if (!req.id) {
+      return res.status(400).json({ message: 'User ID is missing' });
+    }
+    const userId:string = req.id;
 
-    const currentTime = new Date();
+    const createdBooking = await userService.createBookingAndAdjustWallet(
+      userId,
+      turfId,
+      date,
+      selectedStartTime,
+      selectedEndTime,
+      totalPrice
+    );
 
-    const userId = req.id;
-    const bookingData = {
-      turfId: turfId,
-      date: date,
-      userId: userId,
-      selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
-      totalPrice: totalPrice,
-      Time: currentTime,
-      paymentMethod: "online",
-    };
-    const createdBooking = await TurfBooking.create(bookingData);
     console.log("Booking entry created successfully:", createdBooking);
     res.status(201).json(createdBooking);
   } catch (error) {
     console.error("Error occurred while creating booking entry:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-};
+}
+
+
 
 const getDetails = async (req: CustomRequest, res: Response) => {
   try {
@@ -462,10 +439,10 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
     }
     const userIdString = String(userId); 
     console.log(userIdString, 'userIdString');
+  
 
     const { selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod } = req.body;
-
-    console.log(selectedStartTime,selectedDate,selectedEndTime,totalPrice,paymentMethod,'bodyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
+    console.log(turfDetail)
     const bookingResult = await userService.bookWithWallet(userIdString, selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod);
     return res.status(200).json({ message: bookingResult.message });
   } catch (error) {
@@ -490,7 +467,6 @@ export default {
   verifyForgot,
   googleAuth,
   getSingleTurf,
-  handleBooking,
   getBooking,
   getBookingById,
   checkSlotAvailibility,

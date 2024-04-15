@@ -18,7 +18,6 @@ userRouter.post("/verify-forgot", UserController.verifyForgot);
 userRouter.post("/google-login", UserController.googleAuth);
 userRouter.get("/getturf",jwtUser.verifyJwtUser, UserController.getTurf);
 userRouter.get('/getTurf/:id',jwtUser.verifyJwtUser,UserController.getSingleTurf)
-userRouter.post('/handlebooking',jwtUser.verifyJwtUser,UserController.handleBooking)
 userRouter.get('/getbooking',jwtUser.verifyJwtUser,UserController.getBooking)
 userRouter.get('/getbooking/:bookingId',jwtUser.verifyJwtUser,UserController.getBookingById)
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)

@@ -36,8 +36,6 @@ const TurfBookingSchema = new mongoose.Schema({
     enum: [ 'confirmed','completed','cancelled'], 
     default: 'confirmed' 
   },
-  startTime: String, 
-  endTime: String, 
 });
 
 const TurfBooking = mongoose.model('TurfBooking', TurfBookingSchema);

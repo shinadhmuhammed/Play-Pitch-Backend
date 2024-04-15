@@ -63,8 +63,9 @@ const getUserById = (userId: string) => {
   return User.findById(userId);
 }
 
-const recordTransactionInWallet = (userId: string, selectedStartTime: string, turfId: string, amount: number, transactionType: string) => {
+const recordTransactionInWallet = (userId: string, turfId: string, amount: number, transactionType: string) => {
   console.log(transactionType,'yts')
+  console.log(turfId,amount,transactionType,'hai')
   const transaction = {
     date: new Date(),
     walletType: 'wallet', 
