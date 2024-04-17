@@ -357,29 +357,34 @@ const UserCancelBooking = async (id: string) => {
 
     let refundAmount = 0;
     if (booking) {
-      const bookingTime = new Date(booking.date);
+      const bookingDate = new Date(booking.date);
+      const bookingTime = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate(), parseInt(booking.selectedSlot.split(":")[0]), 0, 0);
+      console.log(bookingTime, "bookingTime");
       const timeDifference = bookingTime.getTime() - cancellationTime.getTime();
       const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
       console.log(hoursDifference, "hoursDifference");
       console.log(booking.totalPrice, "totalPrice");
       if (hoursDifference < 1) {
         refundAmount = 0;
-      } else if (hoursDifference >= 1 && hoursDifference < 10) {
+      } else if (hoursDifference  < 10) {
         refundAmount = booking.totalPrice / 2;
       } else {
         refundAmount = booking.totalPrice;
       }
     }
     console.log(refundAmount, "refundamount");
-
+    
+    const turf=await Turf.findById(booking?.turfId)
+    console.log(turf)
     const user = await User.findById(booking?.userId);
-    // console.log(user,'user')
+   
     if (user) {
       user.wallet += refundAmount;
-      console.log(user.wallet, "userwalllllllllllllet");
+      console.log(user.wallet, "userwallet");
       const walletStatement = {
         date: new Date(),
         walletType: "refund",
+        turfName:turf?.turfName,
         amount: refundAmount,
         transaction: "credit",
       };

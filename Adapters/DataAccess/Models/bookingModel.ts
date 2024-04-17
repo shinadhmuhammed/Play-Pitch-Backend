@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import cron from 'node-cron';
 
 const TurfBookingSchema = new mongoose.Schema({
   userId: {
@@ -25,7 +26,7 @@ const TurfBookingSchema = new mongoose.Schema({
   },
   Time:{
     type:Date,
-},
+  },
   paymentMethod: {
     type: String,
     enum: ['wallet', 'online'], 
@@ -39,5 +40,26 @@ const TurfBookingSchema = new mongoose.Schema({
 });
 
 const TurfBooking = mongoose.model('TurfBooking', TurfBookingSchema);
+
+
+const updateBookingStatuses = async () => {
+  try {
+    const expiredBookings = await TurfBooking.find({
+      bookingStatus: 'confirmed',
+      date: { $lt: new Date() },
+    });
+    for (const booking of expiredBookings) {
+      booking.bookingStatus = 'completed';
+      await booking.save();
+    }
+
+    console.log('Booking statuses updated successfully');
+  } catch (error) {
+    console.error('Error updating booking statuses:', error);
+  }
+};
+
+
+cron.schedule('0 * * * *', updateBookingStatuses);
 
 export default TurfBooking;

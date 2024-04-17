@@ -248,7 +248,7 @@ const ownerCancelBooking = async (turfId: string, bookingId: string) => {
       user.wallet += totalPrice;
       user.walletStatements.push({
         date: new Date(),
-        walletType: "user",
+        walletType: "refund",
         amount: totalPrice,
         turfName: turf.turfName,
         transactionType: "credit",
