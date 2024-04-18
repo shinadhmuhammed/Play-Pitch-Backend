@@ -28,6 +28,14 @@ userRouter.get("/userdetails",jwtUser.verifyJwtUser, UserController.getDetails);
 userRouter.post("/reset-password",jwtUser.verifyJwtUser, UserController.resetPassword);
 userRouter.post("/userDetailsEdit", multerUpload.single("profilePhoto"), jwtUser.verifyJwtUser, UserController.editUserDetails);
 userRouter.post("/cancelbooking",jwtUser.verifyJwtUser,UserController.cancelBooking)
+userRouter.post("/createactivity",jwtUser.verifyJwtUser,UserController.createActivity)
+userRouter.get("/getactivity",jwtUser.verifyJwtUser,UserController.getActivity)
+userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,UserController.getActivityById)
+userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,UserController.activityRequest)
+userRouter.get("/getrequest",jwtUser.verifyJwtUser,UserController.getRequest)
+userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.acceptJoinRequest)
+
+
 
 
 

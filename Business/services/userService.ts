@@ -10,6 +10,8 @@ import Stripe from "stripe";
 import dotenv from "dotenv";
 import Owner from "../../Adapters/DataAccess/Models/ownerModel";
 import Admin from "../../Adapters/DataAccess/Models/adminModel";
+import Activity from "../../Adapters/DataAccess/Models/activityModel";
+import { request } from "express";
 dotenv.config();
 
 interface ReqBody {
@@ -158,8 +160,9 @@ const bookingGetById = async (userId: any, bookingId: any) => {
     if (!booking) {
       throw new Error("Booking not found");
     }
+    const user=await User.findById({_id:userId})
     const turfDetails = await Turf.findOne({ _id: booking.turfId });
-    return { booking, turfDetails };
+    return { booking, turfDetails,user };
   } catch (error) {
     console.log(error);
     throw error;
@@ -451,6 +454,82 @@ const bookWithWallet = async (
   }
 };
 
+interface bookingDetails{
+
+}
+
+
+const createActivity=async(formData:any,bookingDetails:any,turfDetails:any,user:any)=>{
+  const activityData = {
+    activityName:formData.activityName,
+    bookingId: bookingDetails._id,
+    maxPlayers: formData.maxPlayers,
+    description: formData.description,
+    turfId: bookingDetails.turfId,
+    userId:bookingDetails.userId,
+    turfName:turfDetails.turfName,
+    userName:user.username,
+    slot:bookingDetails.selectedSlot,
+    date:bookingDetails.date,
+    address:turfDetails.address
+  };
+  console.log(activityData,'activityData')
+  try {
+      const newActivity=await userRepositary.createActivity(activityData)
+      return newActivity
+  } catch (error) {
+    throw new Error('Could not create activity');
+  }
+}
+
+const getActivity=async()=>{
+  try {
+    const activity=await userRepositary.getActivity()
+    return activity
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getActivityById=async(id:string)=>{
+  try {
+    const activity=await Activity.findById(id)
+    return activity
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
+const activityRequest = async (activityId: any, userId: any) => {
+  try {
+      const activity = await Activity.findById(activityId);
+      console.log(activity);
+
+      if (!activity) {
+          throw new Error('Activity not found');
+      }
+
+      if (activity.participants.includes(userId)) {
+          throw new Error('User already joined this activity');
+      }     
+      const existingRequest = activity.joinRequests.find(request => request?.user?.toString() === userId && request.status === 'pending');
+      if (existingRequest) {
+          throw new Error('User already requested to join this activity');
+      }
+      activity.joinRequests.push({ user: userId, status: 'pending' });
+      await activity.save();
+
+      return activity;
+    
+  } catch (error) {
+      throw error;
+  }
+}
+
+
+
+
 
 
 export default {
@@ -469,4 +548,8 @@ export default {
   resetPassword,
   UserCancelBooking,
   bookWithWallet,
+  createActivity,
+  getActivity,
+  getActivityById,
+  activityRequest
 };

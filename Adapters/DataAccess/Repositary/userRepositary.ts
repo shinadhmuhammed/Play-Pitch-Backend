@@ -1,4 +1,5 @@
 import User from "../Models/UserModel";
+import Activity from "../Models/activityModel";
 import TurfBooking from "../Models/bookingModel";
 import Turf from "../Models/turfModel";
 
@@ -83,8 +84,23 @@ const recordTransactionInWallet = (userId: string, turfId: string, amount: numbe
 
 
 
+const createActivity=async(activityData:any)=>{
+  try {
+    const newActivity=Activity.create(activityData)
+    return newActivity
+  } catch (error) {
+    console.log(error)
+  }
+}
 
-
+const getActivity=async()=>{
+  try {
+    const activity=await Activity.find()
+    return activity
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 
 
@@ -97,5 +113,7 @@ export default {
   slotBooking,
   getUserById,
   updatedWalletBalance,
-  recordTransactionInWallet
+  recordTransactionInWallet,
+  createActivity,
+  getActivity
 };

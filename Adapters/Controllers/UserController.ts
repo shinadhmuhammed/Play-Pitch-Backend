@@ -13,6 +13,8 @@ import userService from "../../Business/services/userService";
 dotenv.config();
 import Stripe from "stripe";
 import TurfBooking from "../DataAccess/Models/bookingModel";
+import Turf from "../DataAccess/Models/turfModel";
+import Activity from "../DataAccess/Models/activityModel";
 
 try {
 } catch (error) {}
@@ -242,8 +244,6 @@ interface CustomRequest extends Request {
   role?: string;
 }
 
-
-
 const getBooking = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
@@ -313,12 +313,13 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
 
 const stripeBooking = async (req: CustomRequest, res: Response) => {
   try {
-    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } = req.body;
-    
+    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } =
+      req.body;
+
     if (!req.id) {
-      return res.status(400).json({ message: 'User ID is missing' });
+      return res.status(400).json({ message: "User ID is missing" });
     }
-    const userId:string = req.id;
+    const userId: string = req.id;
 
     const createdBooking = await userService.createBookingAndAdjustWallet(
       userId,
@@ -335,9 +336,7 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
     console.error("Error occurred while creating booking entry:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
-}
-
-
+};
 
 const getDetails = async (req: CustomRequest, res: Response) => {
   try {
@@ -430,31 +429,136 @@ const cancelBooking = async (req: Request, res: Response) => {
   }
 };
 
-
 const payWithWallet = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
     if (!userId) {
-      return res.status(400).json({ message: 'User ID is missing' });
+      return res.status(400).json({ message: "User ID is missing" });
     }
-    const userIdString = String(userId); 
-    console.log(userIdString, 'userIdString');
-  
-
-    const { selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod } = req.body;
-    console.log(turfDetail)
-    const bookingResult = await userService.bookWithWallet(userIdString, selectedStartTime, turfDetail, selectedDate, selectedEndTime, totalPrice,paymentMethod);
+    const userIdString = String(userId);
+    const {
+      selectedStartTime,
+      turfDetail,
+      selectedDate,
+      selectedEndTime,
+      totalPrice,
+      paymentMethod,
+    } = req.body;
+    console.log(turfDetail);
+    const bookingResult = await userService.bookWithWallet(
+      userIdString,
+      selectedStartTime,
+      turfDetail,
+      selectedDate,
+      selectedEndTime,
+      totalPrice,
+      paymentMethod
+    );
     return res.status(200).json({ message: bookingResult.message });
   } catch (error) {
-    console.error('Error occurred while processing payment with wallet:', error);
-    return res.status(500).json({ message: 'Failed to process payment with wallet' });
+    console.error(
+      "Error occurred while processing payment with wallet:",
+      error
+    );
+    return res
+      .status(500)
+      .json({ message: "Failed to process payment with wallet" });
   }
 };
 
+const createActivity = async (req: Request, res: Response) => {
+  try {
+    const { formData, bookingDetails, turfDetails, user } = req.body;
+    console.log(formData, bookingDetails);
+    const newActivity = await userService.createActivity(
+      formData,
+      bookingDetails,
+      turfDetails,
+      user
+    );
+    res.status(201).json(newActivity);
+  } catch (error) {
+    res.status(500).json({ message: "internal server error" });
+  }
+};
 
+const getActivity = async (req: Request, res: Response) => {
+  try {
+    const activity = await userService.getActivity();
+    res.status(201).json(activity);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
+const getActivityById = async (req: Request, res: Response) => {
+  try {
+    console.log("started");
+    const { id } = req.params;
+    const activity = await userService.getActivityById(id);
+    res.json(activity);
+  } catch (error) {
+    console.error("Error fetching activity details:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
+const activityRequest = async (req: CustomRequest, res: Response) => {
+  const activityId = req.params.id;
+  const userId = req.id;
+  console.log(userId);
 
+  try {
+    if (userId) {
+      const activity = await userService.activityRequest(activityId, userId);
+      res.status(201).json(activity);
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getRequest = async (req: CustomRequest, res: Response) => {
+  try {
+    const userId = req.id;
+    console.log(userId, "hey e chellma");
+    const activity = await Activity.findOne({ userId });
+    res.status(201).json(activity);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+const acceptJoinRequest = async (req: Request, res: Response) => {
+  const { activityId, joinRequestId } = req.params;
+  try {
+    console.log("eda moneeeeeeeeeeeeeeeeeeeeeeeeee");
+    const activity = await Activity.findById(activityId);
+    if (!activity) {
+      return res.status(404).json({ message: "Activity not found" });
+    }
+    const joinRequest = activity.joinRequests.find(
+      (request) => request?._id?.toString() === joinRequestId
+    );
+    if (!joinRequest) {
+      return res.status(404).json({ message: "Join request not found" });
+    }
+    joinRequest.status = "accepted";
+    if (joinRequest.user) {
+      activity.participants.push(joinRequest.user);
+    } else {
+      console.error("User not found for join request:", joinRequestId);
+    }
+
+    await activity.save();
+
+    res.status(200).json({ message: "Join request accepted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
 
 export default {
   signup,
@@ -477,5 +581,11 @@ export default {
   resetPassword,
   editUserDetails,
   cancelBooking,
-  payWithWallet
+  payWithWallet,
+  createActivity,
+  getActivity,
+  getActivityById,
+  activityRequest,
+  getRequest,
+  acceptJoinRequest,
 };
