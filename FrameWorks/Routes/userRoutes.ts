@@ -34,6 +34,12 @@ userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,UserController.getActi
 userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,UserController.activityRequest)
 userRouter.get("/getrequest",jwtUser.verifyJwtUser,UserController.getRequest)
 userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.acceptJoinRequest)
+userRouter.post("/requestedId",jwtUser.verifyJwtUser,UserController.acceptedUserId)
+
+
+
+
+
 
 
 

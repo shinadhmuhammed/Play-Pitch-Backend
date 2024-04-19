@@ -160,9 +160,9 @@ const bookingGetById = async (userId: any, bookingId: any) => {
     if (!booking) {
       throw new Error("Booking not found");
     }
-    const user=await User.findById({_id:userId})
+    const user = await User.findById({ _id: userId });
     const turfDetails = await Turf.findOne({ _id: booking.turfId });
-    return { booking, turfDetails,user };
+    return { booking, turfDetails, user };
   } catch (error) {
     console.log(error);
     throw error;
@@ -201,12 +201,23 @@ const createStripeSession = async (
   selectedEndTime: string,
   turfDetail: any
 ): Promise<string> => {
+  const customer = await stripe.customers.create({
+    name: "nabeel",
+    email: "muhammedshinadh@gmail.com",
+    address: {
+      state: "kerala",
+      line1: "123 kfaj kfdsj",
+      postal_code: "672732",
+      country: "US",
+      city: "palakkad",
+    },
+  });
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: [
       {
         price_data: {
-          currency: "usd",
+          currency: "inr",
           product_data: {
             name: "Turf Booking",
           },
@@ -215,6 +226,7 @@ const createStripeSession = async (
         quantity: 1,
       },
     ],
+    customer: customer.id,
     mode: "payment",
     success_url: `http://localhost:5173/booking-verification?turfId=${encodeURIComponent(
       turfDetail._id
@@ -259,9 +271,8 @@ const createBookingAndAdjustWallet = async (
       throw new Error("Turf not found");
     }
 
-
-    const ownerAmount = totalPrice * 0.9; 
-    const adminAmount = totalPrice * 0.1; 
+    const ownerAmount = totalPrice * 0.9;
+    const adminAmount = totalPrice * 0.1;
 
     const owner = await Owner.findOneAndUpdate(
       { _id: turf.turfOwner },
@@ -280,7 +291,6 @@ const createBookingAndAdjustWallet = async (
       { new: true }
     );
 
-   
     const adminEmail = "admin@gmail.com";
 
     const admin = await Admin.findOneAndUpdate(
@@ -299,14 +309,12 @@ const createBookingAndAdjustWallet = async (
       },
       { new: true }
     );
-    
 
     return createdBooking;
   } catch (error) {
     throw new Error("Failed to create booking and adjust wallet");
   }
 };
-
 
 const getUserDetails = async (userId: string) => {
   try {
@@ -361,7 +369,14 @@ const UserCancelBooking = async (id: string) => {
     let refundAmount = 0;
     if (booking) {
       const bookingDate = new Date(booking.date);
-      const bookingTime = new Date(bookingDate.getFullYear(), bookingDate.getMonth(), bookingDate.getDate(), parseInt(booking.selectedSlot.split(":")[0]), 0, 0);
+      const bookingTime = new Date(
+        bookingDate.getFullYear(),
+        bookingDate.getMonth(),
+        bookingDate.getDate(),
+        parseInt(booking.selectedSlot.split(":")[0]),
+        0,
+        0
+      );
       console.log(bookingTime, "bookingTime");
       const timeDifference = bookingTime.getTime() - cancellationTime.getTime();
       const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
@@ -369,25 +384,25 @@ const UserCancelBooking = async (id: string) => {
       console.log(booking.totalPrice, "totalPrice");
       if (hoursDifference < 1) {
         refundAmount = 0;
-      } else if (hoursDifference  < 10) {
+      } else if (hoursDifference < 10) {
         refundAmount = booking.totalPrice / 2;
       } else {
         refundAmount = booking.totalPrice;
       }
     }
     console.log(refundAmount, "refundamount");
-    
-    const turf=await Turf.findById(booking?.turfId)
-    console.log(turf)
+
+    const turf = await Turf.findById(booking?.turfId);
+    console.log(turf);
     const user = await User.findById(booking?.userId);
-   
+
     if (user) {
       user.wallet += refundAmount;
       console.log(user.wallet, "userwallet");
       const walletStatement = {
         date: new Date(),
         walletType: "refund",
-        turfName:turf?.turfName,
+        turfName: turf?.turfName,
         amount: refundAmount,
         transaction: "credit",
       };
@@ -444,9 +459,7 @@ const bookWithWallet = async (
       paymentMethod: paymentMethod,
       bookingStatus: "confirmed",
     });
-
     await newBooking.save();
-
     return { message: "Booking successful" };
   } catch (error) {
     console.error("Error occurred while booking with wallet:", error);
@@ -454,81 +467,93 @@ const bookWithWallet = async (
   }
 };
 
-interface bookingDetails{
-
-}
-
-
-const createActivity=async(formData:any,bookingDetails:any,turfDetails:any,user:any)=>{
+const createActivity = async (
+  formData: any,
+  bookingDetails: any,
+  turfDetails: any,
+  user: any
+) => {
   const activityData = {
-    activityName:formData.activityName,
+    activityName: formData.activityName,
     bookingId: bookingDetails._id,
     maxPlayers: formData.maxPlayers,
     description: formData.description,
     turfId: bookingDetails.turfId,
-    userId:bookingDetails.userId,
-    turfName:turfDetails.turfName,
-    userName:user.username,
-    slot:bookingDetails.selectedSlot,
-    date:bookingDetails.date,
-    address:turfDetails.address
+    userId: bookingDetails.userId,
+    turfName: turfDetails.turfName,
+    userName: user.username,
+    slot: bookingDetails.selectedSlot,
+    date: bookingDetails.date,
+    address: turfDetails.address,
   };
-  console.log(activityData,'activityData')
+  console.log(activityData, "activityData");
   try {
-      const newActivity=await userRepositary.createActivity(activityData)
-      return newActivity
+    const existingActivity = await userRepositary.getActivityByBookingId(
+      bookingDetails._id
+    );
+    if (existingActivity) {
+      throw new Error("Activity with the same booking ID already exists");
+    }
+    const newActivity = await userRepositary.createActivity(activityData);
+    return newActivity;
   } catch (error) {
-    throw new Error('Could not create activity');
+    throw new Error("Could not create activity");
   }
-}
+};
 
-const getActivity=async()=>{
+const getActivity = async () => {
   try {
-    const activity=await userRepositary.getActivity()
-    return activity
+    const activity = await userRepositary.getActivity();
+    return activity;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
-const getActivityById=async(id:string)=>{
+const getActivityById = async (id: string) => {
   try {
-    const activity=await Activity.findById(id)
-    return activity
+    const activity = await Activity.findById(id);
+    return activity;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
-
+};
 
 const activityRequest = async (activityId: any, userId: any) => {
   try {
-      const activity = await Activity.findById(activityId);
-      console.log(activity);
+    const activity = await Activity.findById(activityId);
+    console.log(activity);
+    if (!activity) {
+      throw new Error("Activity not found");
+    }
 
-      if (!activity) {
-          throw new Error('Activity not found');
-      }
+    if (activity.userId.toString() === userId) {
+      throw new Error("User who created the activity cannot request to join");
+    }
 
-      if (activity.participants.includes(userId)) {
-          throw new Error('User already joined this activity');
-      }     
-      const existingRequest = activity.joinRequests.find(request => request?.user?.toString() === userId && request.status === 'pending');
-      if (existingRequest) {
-          throw new Error('User already requested to join this activity');
-      }
-      activity.joinRequests.push({ user: userId, status: 'pending' });
-      await activity.save();
+    const existingRequest=await userRepositary.existingRequest(activityId,userId)
+    if(existingRequest){
+      throw new Error('Request already sent')
+    }
+    activity.joinRequests.push({ user: userId, status: "pending" });
+    await activity.save();
 
-      return activity;
-    
+    return activity;
   } catch (error) {
-      throw error;
+    throw error;
+  }
+};  
+
+const addedUserId = async (activity: any) => {
+  try {
+    const participantIds = activity.participants.map((participant: any) => participant);
+      const participantDetails=await User.find({_id:{$in:participantIds}})
+      console.log(participantDetails,'participant details')
+      return participantDetails
+  } catch (error) {
+    console.log(error);
   }
 }
-
-
-
 
 
 
@@ -551,5 +576,6 @@ export default {
   createActivity,
   getActivity,
   getActivityById,
-  activityRequest
+  activityRequest,
+  addedUserId
 };

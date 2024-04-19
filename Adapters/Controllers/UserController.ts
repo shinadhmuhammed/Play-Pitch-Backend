@@ -12,8 +12,6 @@ import dotenv from "dotenv";
 import userService from "../../Business/services/userService";
 dotenv.config();
 import Stripe from "stripe";
-import TurfBooking from "../DataAccess/Models/bookingModel";
-import Turf from "../DataAccess/Models/turfModel";
 import Activity from "../DataAccess/Models/activityModel";
 
 try {
@@ -445,6 +443,13 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
       paymentMethod,
     } = req.body;
     console.log(turfDetail);
+    const user = await userRepositary.getUserById(userIdString);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.wallet < totalPrice) {
+      return res.status(400).json({ message: "Insufficient balance in the wallet" });
+    }
     const bookingResult = await userService.bookWithWallet(
       userIdString,
       selectedStartTime,
@@ -493,7 +498,6 @@ const getActivity = async (req: Request, res: Response) => {
 
 const getActivityById = async (req: Request, res: Response) => {
   try {
-    console.log("started");
     const { id } = req.params;
     const activity = await userService.getActivityById(id);
     res.json(activity);
@@ -533,7 +537,6 @@ const getRequest = async (req: CustomRequest, res: Response) => {
 const acceptJoinRequest = async (req: Request, res: Response) => {
   const { activityId, joinRequestId } = req.params;
   try {
-    console.log("eda moneeeeeeeeeeeeeeeeeeeeeeeeee");
     const activity = await Activity.findById(activityId);
     if (!activity) {
       return res.status(404).json({ message: "Activity not found" });
@@ -559,6 +562,23 @@ const acceptJoinRequest = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server Error" });
   }
 };
+
+const acceptedUserId = async (req: Request, res: Response) => {
+  try {
+    const { activity } = req.body;
+    console.log(activity,'activity')
+    const participantDetails=await userService.addedUserId(activity)
+    console.log(participantDetails,'participantDetails')
+    res.status(200).json(participantDetails)
+  } catch (error) {
+    res.status(500).json({message:"Internal Server Error"})
+  }
+};
+
+
+
+
+
 
 export default {
   signup,
@@ -588,4 +608,5 @@ export default {
   activityRequest,
   getRequest,
   acceptJoinRequest,
+  acceptedUserId
 };

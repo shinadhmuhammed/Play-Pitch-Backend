@@ -64,14 +64,15 @@ const getUserById = (userId: string) => {
   return User.findById(userId);
 }
 
-const recordTransactionInWallet = (userId: string, turfId: string, amount: number, transactionType: string) => {
+const recordTransactionInWallet =async (userId: string, turfId: string, amount: number, transactionType: string) => {
   console.log(transactionType,'yts')
   console.log(turfId,amount,transactionType,'hai')
+  const turf=await Turf.findById(turfId)
   const transaction = {
     date: new Date(),
     walletType: 'wallet', 
     amount: amount,
-    turfName: turfId, 
+    turfName: turf?.turfName, 
     transactionType: transactionType 
   };
   
@@ -80,6 +81,15 @@ const recordTransactionInWallet = (userId: string, turfId: string, amount: numbe
       walletStatements: transaction
     } 
   });
+}
+
+const getActivityByBookingId=async(bookingId:string)=>{
+    try {
+        const activity=await Activity.findOne({bookingId:bookingId})
+        return activity
+    } catch (error) {
+      console.log(error)
+    }
 }
 
 
@@ -102,6 +112,17 @@ const getActivity=async()=>{
   }
 }
 
+const existingRequest=async(activityId:string,userId:string)=>{
+  try {
+    const activity=await Activity.findById(activityId)
+    const Requests=activity?.joinRequests.find((request)=>request.user?.toString()===userId)
+      return Requests
+  } catch (error) {
+    console.error("Error checking existing request:", error);
+    throw new Error("Could not check existing request");
+  }
+}
+
 
 
 
@@ -115,5 +136,7 @@ export default {
   updatedWalletBalance,
   recordTransactionInWallet,
   createActivity,
-  getActivity
+  getActivity,
+  getActivityByBookingId,
+  existingRequest
 };
