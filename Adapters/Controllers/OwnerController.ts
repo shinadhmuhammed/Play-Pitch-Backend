@@ -9,21 +9,23 @@ import Owner from "../DataAccess/Models/ownerModel";
 import Turf from "../DataAccess/Models/turfModel";
 import nodemailer from "../../Business/utils/nodemailer";
 import TurfBooking from "../DataAccess/Models/bookingModel";
-import User from "../DataAccess/Models/UserModel";
-import userService from "../../Business/services/userService";
+
 
 interface Ownersignup {
   email: string;
   phone: string;
   password: string;
   otp?: string;
+ 
 }
 
 interface submitResponse {
   status: number;
   message: string;
   token?: string;
+  turfAdded?: boolean; 
 }
+
 
 const signup = async (
   req: Request<{}, {}, Ownersignup>,
@@ -109,9 +111,13 @@ const ownerLogin = async (
     if (!isPasswordValid) {
       return res.status(401).json({ status: 401, message: "Invalid password" });
     }
-    const role=owner.role || 'owner'
-    const token = jwtOwner.generateTokens(owner._id.toString(),role);
-    res.status(200).json({ status: 200, message: "Login successful", token });
+
+    const role = owner.role || 'owner';
+    const token = jwtOwner.generateTokens(owner._id.toString(), role);
+    const turf = await Turf.findOne({ turfOwner: owner._id });
+    const turfAdded = !!turf;
+
+    res.status(200).json({ status: 200, message: "Login successful", token, turfAdded });
   } catch (error) {
     console.error(error);
     return res
@@ -119,6 +125,7 @@ const ownerLogin = async (
       .json({ status: 500, message: "Internal Server Error" });
   }
 };
+
 
 
 const passwordForgot = async (req: Request, res: Response) => {
@@ -336,6 +343,20 @@ const cancelBooking=async(req:Request,res:Response)=>{
 }
 
 
+const getDashboardData=async(req:CustomRequest,res:Response)=>{
+  try {
+    const ownerId=req.id
+    if(ownerId){
+    const dashboardData=await ownerService.getDashboardData(ownerId)
+    res.json(dashboardData)
+  }
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({message:"Internal Server Error"})
+  }
+}
+
+
 
 
 
@@ -357,5 +378,6 @@ export default {
   ownerDetails,
   editOwnerDetails,
   changePassword,
-  cancelBooking
+  cancelBooking,
+  getDashboardData
 };

@@ -26,6 +26,7 @@ OwnerRouter.get("/ownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.ownerD
 OwnerRouter.put("/editownerdetails", jwtOwner.verifyOwnerJwt, OwnerController.editOwnerDetails);
 OwnerRouter.post("/change-password", jwtOwner.verifyOwnerJwt, OwnerController.changePassword);
 OwnerRouter.post("/cancelbookings", jwtOwner.verifyOwnerJwt, OwnerController.cancelBooking);
+OwnerRouter.get("/dashboard-data", jwtOwner.verifyOwnerJwt, OwnerController.getDashboardData);
 
 
 

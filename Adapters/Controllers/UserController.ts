@@ -286,6 +286,7 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
     const {
       totalPrice,
       selectedDate,
+      ownerId,
       selectedStartTime,
       selectedEndTime,
       turfDetail,
@@ -298,6 +299,7 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
     const sessionId = await userService.createStripeSession(
       totalPrice,
       selectedDate,
+      ownerId,
       selectedStartTime,
       selectedEndTime,
       turfDetail
@@ -311,9 +313,8 @@ const stripePayment = async (req: CustomRequest, res: Response) => {
 
 const stripeBooking = async (req: CustomRequest, res: Response) => {
   try {
-    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice } =
+    const { selectedStartTime, turfId, date, selectedEndTime, totalPrice ,ownerId} =
       req.body;
-
     if (!req.id) {
       return res.status(400).json({ message: "User ID is missing" });
     }
@@ -322,12 +323,12 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
     const createdBooking = await userService.createBookingAndAdjustWallet(
       userId,
       turfId,
+      ownerId,
       date,
       selectedStartTime,
       selectedEndTime,
       totalPrice
     );
-
     console.log("Booking entry created successfully:", createdBooking);
     res.status(201).json(createdBooking);
   } catch (error) {
@@ -440,9 +441,10 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
       selectedDate,
       selectedEndTime,
       totalPrice,
+      ownerId,
       paymentMethod,
     } = req.body;
-    console.log(turfDetail);
+    console.log(ownerId,'tuuuuuuuuuuuuuuuuuuuuuuurfIDddddddddddddddddd');
     const user = await userRepositary.getUserById(userIdString);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -452,6 +454,7 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
     }
     const bookingResult = await userService.bookWithWallet(
       userIdString,
+      ownerId,
       selectedStartTime,
       turfDetail,
       selectedDate,
@@ -487,14 +490,16 @@ const createActivity = async (req: Request, res: Response) => {
   }
 };
 
-const getActivity = async (req: Request, res: Response) => {
+const getActivity = async (req: CustomRequest, res: Response) => {
   try {
+    const userId = req.id;
     const activity = await userService.getActivity();
-    res.status(201).json(activity);
+    res.status(201).json({ userId, activity });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const getActivityById = async (req: Request, res: Response) => {
   try {
@@ -524,8 +529,8 @@ const activityRequest = async (req: CustomRequest, res: Response) => {
 
 const getRequest = async (req: CustomRequest, res: Response) => {
   try {
+    console.log('hello')
     const userId = req.id;
-    console.log(userId, "hey e chellma");
     const activity = await Activity.findOne({ userId });
     res.status(201).json(activity);
   } catch (error) {
@@ -566,14 +571,14 @@ const acceptJoinRequest = async (req: Request, res: Response) => {
 const acceptedUserId = async (req: Request, res: Response) => {
   try {
     const { activity } = req.body;
-    console.log(activity,'activity')
     const participantDetails=await userService.addedUserId(activity)
-    console.log(participantDetails,'participantDetails')
     res.status(200).json(participantDetails)
   } catch (error) {
     res.status(500).json({message:"Internal Server Error"})
   }
 };
+
+
 
 
 
@@ -608,5 +613,5 @@ export default {
   activityRequest,
   getRequest,
   acceptJoinRequest,
-  acceptedUserId
+  acceptedUserId,
 };

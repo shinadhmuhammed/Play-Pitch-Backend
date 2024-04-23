@@ -12,6 +12,11 @@ const TurfBookingSchema = new mongoose.Schema({
     ref: 'Turf',
     required: true
   },
+  ownerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Owner', 
+    required: true
+  },
   date: {
     type: Date,
     required: true

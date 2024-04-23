@@ -157,11 +157,13 @@ const bookingGetById = async (userId: any, bookingId: any) => {
       userId: userId,
       _id: bookingId,
     });
+    console.log(booking,'bopooooking')
     if (!booking) {
       throw new Error("Booking not found");
     }
     const user = await User.findById({ _id: userId });
     const turfDetails = await Turf.findOne({ _id: booking.turfId });
+    
     return { booking, turfDetails, user };
   } catch (error) {
     console.log(error);
@@ -197,12 +199,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const createStripeSession = async (
   totalPrice: number,
   selectedDate: string,
+  ownerId: string, 
   selectedStartTime: string,
   selectedEndTime: string,
   turfDetail: any
 ): Promise<string> => {
   const customer = await stripe.customers.create({
-    name: "nabeel",
+    name: "shinadh",
     email: "muhammedshinadh@gmail.com",
     address: {
       state: "kerala",
@@ -238,15 +241,17 @@ const createStripeSession = async (
       selectedEndTime
     )}&paymentMethod=online&totalPrice=${encodeURIComponent(
       totalPrice.toString()
-    )}`,
+    )}&ownerId=${encodeURIComponent(ownerId)}`, 
     cancel_url: "http://localhost:5173/booking-cancel",
   });
   return session.id;
 };
 
+
 const createBookingAndAdjustWallet = async (
   userId: string,
   turfId: string,
+  ownerId: string,
   date: Date,
   selectedStartTime: string,
   selectedEndTime: string,
@@ -255,6 +260,7 @@ const createBookingAndAdjustWallet = async (
   try {
     const currentTime = new Date();
     const bookingData = {
+      ownerId: ownerId, 
       turfId: turfId,
       date: date,
       userId: userId,
@@ -264,8 +270,6 @@ const createBookingAndAdjustWallet = async (
       paymentMethod: "online",
     };
     const createdBooking = await TurfBooking.create(bookingData);
-
-    // Fetch the turf document
     const turf = await Turf.findById(turfId);
     if (!turf) {
       throw new Error("Turf not found");
@@ -275,7 +279,7 @@ const createBookingAndAdjustWallet = async (
     const adminAmount = totalPrice * 0.1;
 
     const owner = await Owner.findOneAndUpdate(
-      { _id: turf.turfOwner },
+      { _id: ownerId }, 
       {
         $inc: { wallet: ownerAmount },
         $push: {
@@ -315,6 +319,7 @@ const createBookingAndAdjustWallet = async (
     throw new Error("Failed to create booking and adjust wallet");
   }
 };
+
 
 const getUserDetails = async (userId: string) => {
   try {
@@ -418,6 +423,7 @@ const UserCancelBooking = async (id: string) => {
 
 const bookWithWallet = async (
   userId: string,
+  ownerId: string,
   selectedStartTime: string,
   turfId: string,
   date: string,
@@ -452,6 +458,7 @@ const bookWithWallet = async (
     const newBooking = new TurfBooking({
       userId: userId,
       turfId: turfId,
+      ownerId: ownerId,
       date: date,
       selectedSlot: `${selectedStartTime} - ${selectedEndTime}`,
       totalPrice: totalPrice,
@@ -522,14 +529,11 @@ const getActivityById = async (id: string) => {
 const activityRequest = async (activityId: any, userId: any) => {
   try {
     const activity = await Activity.findById(activityId);
-    console.log(activity);
     if (!activity) {
       throw new Error("Activity not found");
     }
 
-    if (activity.userId.toString() === userId) {
-      throw new Error("User who created the activity cannot request to join");
-    }
+  
 
     const existingRequest=await userRepositary.existingRequest(activityId,userId)
     if(existingRequest){
@@ -546,14 +550,26 @@ const activityRequest = async (activityId: any, userId: any) => {
 
 const addedUserId = async (activity: any) => {
   try {
+    if (!activity.participants) {
+      console.log("Participants array is empty or null");
+      return []; 
+    }
     const participantIds = activity.participants.map((participant: any) => participant);
-      const participantDetails=await User.find({_id:{$in:participantIds}})
-      console.log(participantDetails,'participant details')
-      return participantDetails
+    const participantDetails = await User.find({_id: {$in: participantIds}});
+    return participantDetails;
   } catch (error) {
     console.log(error);
+
   }
 }
+
+
+
+
+
+
+
+
 
 
 

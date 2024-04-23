@@ -7,6 +7,7 @@ import Owner from "../../Adapters/DataAccess/Models/ownerModel";
 import TurfBooking from "../../Adapters/DataAccess/Models/bookingModel";
 import nodemailer from "../utils/nodemailer";
 import User from "../../Adapters/DataAccess/Models/UserModel";
+import mongoose from "mongoose";
 
 interface Ownersignup {
   email: string;
@@ -272,6 +273,90 @@ const ownerCancelBooking = async (turfId: string, bookingId: string) => {
   }
 };
 
+
+const getDashboardData = async (ownerId:string) => {
+  console.log(ownerId,'ownerId')
+  const today = new Date();
+  const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const thisYearStart = new Date(today.getFullYear(), 0, 1);
+
+  const totalRevenueToday = await calculateRevenue(ownerId, today, today);
+  console.log(totalRevenueToday,'totoaaal')
+  const totalBookingsToday = await calculateTotalBookings(ownerId, today, today);
+  const totalRevenueThisMonth = await calculateRevenue(ownerId, thisMonthStart, today);
+  const totalBookingsThisMonth = await calculateTotalBookings(ownerId, thisMonthStart, today);
+  const totalRevenueThisYear = await calculateRevenue(ownerId, thisYearStart, today);
+  const totalBookingsThisYear = await calculateTotalBookings(ownerId, thisYearStart, today);
+
+  return {
+    totalRevenueToday,
+    totalBookingsToday,
+    totalRevenueThisMonth,
+    totalBookingsThisMonth,
+    totalRevenueThisYear,
+    totalBookingsThisYear
+  };
+};
+
+
+const calculateRevenue = async (ownerId: string, startDate: Date, endDate: Date) => {
+  try {
+  
+    const startOfDay = new Date(startDate);
+    startOfDay.setUTCHours(0, 0, 0, 0); 
+    
+    const endOfDay = new Date(endDate);
+    endOfDay.setUTCHours(23, 59, 59, 999); 
+
+    const result = await TurfBooking.aggregate([
+      {
+        $match: {
+          bookingStatus: 'completed',
+          ownerId: new mongoose.Types.ObjectId(ownerId), 
+          date: { $gte: startOfDay, $lte: endOfDay }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: '$totalPrice' }
+        }
+      }
+    ]);
+    console.log(result,'result')
+
+    return result.length > 0 ? result[0].totalRevenue : 0;
+  } catch (error) {
+    console.error('Error calculating revenue:', error);
+    throw error;
+  }
+};
+
+
+
+
+
+const calculateTotalBookings = async (ownerId: string, startDate: Date, endDate: Date) => {
+  try {
+    const startOfDay = new Date(startDate);
+    startOfDay.setUTCHours(0, 0, 0, 0); 
+    const endOfDay = new Date(endDate);
+    endOfDay.setUTCHours(23, 59, 59, 999); 
+
+    const result = await TurfBooking.countDocuments({
+      bookingStatus: 'completed',
+      ownerId: new mongoose.Types.ObjectId(ownerId), 
+      date: { $gte: startOfDay, $lte: endOfDay }
+    });
+    return result;
+  } catch (error) {
+    console.error('Error calculating total bookings:', error);
+    throw error;
+  }
+};
+
+
+
 export default {
   confirmPassword,
   createTurf,
@@ -282,4 +367,5 @@ export default {
   editDetails,
   resetPassword,
   ownerCancelBooking,
+  getDashboardData
 };
