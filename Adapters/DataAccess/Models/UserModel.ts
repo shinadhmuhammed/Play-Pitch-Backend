@@ -2,8 +2,7 @@ import mongoose from 'mongoose'
 
 const UserSchema = new mongoose.Schema({
     username:{ 
-        type:String,
-        required:true
+        type:String,    
     },
     email: {
         type: String,
@@ -15,7 +14,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    profilePhotoUrl: String,
+    profilePhotoUrl:{ type: String },
     isBlocked: {
         type: Boolean,
         default: false
