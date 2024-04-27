@@ -63,12 +63,12 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       facilities,
       openingTime,
       closingTime,
-      contactNumber,  
+      contactNumber,
       courtType,
       latitude,
       longitude,
     } = req.body;
-    
+
     const prices: Prices = {};
     courtType.forEach((type: string | number) => {
       prices[type] = req.body[`${type}-price`];
@@ -274,18 +274,37 @@ const ownerCancelBooking = async (turfId: string, bookingId: string) => {
   }
 };
 
-
-const getDashboardData = async (ownerId:string) => {
+const getDashboardData = async (ownerId: string) => {
   const today = new Date();
   const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const thisYearStart = new Date(today.getFullYear(), 0, 1);
 
   const totalRevenueToday = await calculateRevenue(ownerId, today, today);
-  const totalBookingsToday = await calculateTotalBookings(ownerId, today, today);
-  const totalRevenueThisMonth = await calculateRevenue(ownerId, thisMonthStart, today);
-  const totalBookingsThisMonth = await calculateTotalBookings(ownerId, thisMonthStart, today);
-  const totalRevenueThisYear = await calculateRevenue(ownerId, thisYearStart, today);
-  const totalBookingsThisYear = await calculateTotalBookings(ownerId, thisYearStart, today);
+  const totalBookingsToday = await calculateTotalBookings(
+    ownerId,
+    today,
+    today
+  );
+  const totalRevenueThisMonth = await calculateRevenue(
+    ownerId,
+    thisMonthStart,
+    today
+  );
+  const totalBookingsThisMonth = await calculateTotalBookings(
+    ownerId,
+    thisMonthStart,
+    today
+  );
+  const totalRevenueThisYear = await calculateRevenue(
+    ownerId,
+    thisYearStart,
+    today
+  );
+  const totalBookingsThisYear = await calculateTotalBookings(
+    ownerId,
+    thisYearStart,
+    today
+  );
 
   return {
     totalRevenueToday,
@@ -293,68 +312,68 @@ const getDashboardData = async (ownerId:string) => {
     totalRevenueThisMonth,
     totalBookingsThisMonth,
     totalRevenueThisYear,
-    totalBookingsThisYear
+    totalBookingsThisYear,
   };
 };
 
-
-const calculateRevenue = async (ownerId: string, startDate: Date, endDate: Date) => {
+const calculateRevenue = async (
+  ownerId: string,
+  startDate: Date,
+  endDate: Date
+) => {
   try {
-  
     const startOfDay = new Date(startDate);
-    startOfDay.setUTCHours(0, 0, 0, 0); 
-    
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
     const endOfDay = new Date(endDate);
-    endOfDay.setUTCHours(23, 59, 59, 999); 
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const result = await TurfBooking.aggregate([
       {
         $match: {
-          bookingStatus: 'completed',
-          ownerId: new mongoose.Types.ObjectId(ownerId), 
-          date: { $gte: startOfDay, $lte: endOfDay }
-        }
+          bookingStatus: "completed",
+          ownerId: new mongoose.Types.ObjectId(ownerId),
+          date: { $gte: startOfDay, $lte: endOfDay },
+        },
       },
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: '$totalPrice' }
-        }
-      }
+          totalRevenue: { $sum: "$totalPrice" },
+        },
+      },
     ]);
-    console.log(result,'result')
+    console.log(result, "result");
 
     return result.length > 0 ? result[0].totalRevenue : 0;
   } catch (error) {
-    console.error('Error calculating revenue:', error);
+    console.error("Error calculating revenue:", error);
     throw error;
   }
 };
 
-
-
-
-
-const calculateTotalBookings = async (ownerId: string, startDate: Date, endDate: Date) => {
+const calculateTotalBookings = async (
+  ownerId: string,
+  startDate: Date,
+  endDate: Date
+) => {
   try {
     const startOfDay = new Date(startDate);
-    startOfDay.setUTCHours(0, 0, 0, 0); 
+    startOfDay.setUTCHours(0, 0, 0, 0);
     const endOfDay = new Date(endDate);
-    endOfDay.setUTCHours(23, 59, 59, 999); 
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const result = await TurfBooking.countDocuments({
-      bookingStatus: 'completed',
-      ownerId: new mongoose.Types.ObjectId(ownerId), 
-      date: { $gte: startOfDay, $lte: endOfDay }
+      bookingStatus: "completed",
+      ownerId: new mongoose.Types.ObjectId(ownerId),
+      date: { $gte: startOfDay, $lte: endOfDay },
     });
     return result;
   } catch (error) {
-    console.error('Error calculating total bookings:', error);
+    console.error("Error calculating total bookings:", error);
     throw error;
   }
 };
-
-
 
 export default {
   confirmPassword,
@@ -366,5 +385,5 @@ export default {
   editDetails,
   resetPassword,
   ownerCancelBooking,
-  getDashboardData
+  getDashboardData,
 };
