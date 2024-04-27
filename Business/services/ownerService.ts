@@ -63,13 +63,12 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       facilities,
       openingTime,
       closingTime,
+      contactNumber,  
       courtType,
       latitude,
       longitude,
     } = req.body;
-
-    console.log(req.body);
-
+    
     const prices: Prices = {};
     courtType.forEach((type: string | number) => {
       prices[type] = req.body[`${type}-price`];
@@ -84,6 +83,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       !facilities ||
       !openingTime ||
       !closingTime ||
+      !contactNumber ||
       !prices ||
       !courtType ||
       !latitude ||
@@ -124,6 +124,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       facilities,
       openingTime,
       closingTime,
+      contactNumber,
       courtType,
       latitude,
       longitude,
@@ -275,13 +276,11 @@ const ownerCancelBooking = async (turfId: string, bookingId: string) => {
 
 
 const getDashboardData = async (ownerId:string) => {
-  console.log(ownerId,'ownerId')
   const today = new Date();
   const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   const thisYearStart = new Date(today.getFullYear(), 0, 1);
 
   const totalRevenueToday = await calculateRevenue(ownerId, today, today);
-  console.log(totalRevenueToday,'totoaaal')
   const totalBookingsToday = await calculateTotalBookings(ownerId, today, today);
   const totalRevenueThisMonth = await calculateRevenue(ownerId, thisMonthStart, today);
   const totalBookingsThisMonth = await calculateTotalBookings(ownerId, thisMonthStart, today);
