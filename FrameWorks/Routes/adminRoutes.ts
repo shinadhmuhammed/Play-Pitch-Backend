@@ -12,6 +12,7 @@ AdminRouter.get('/venuerequest',jwtAdmin.verifyJwtAdmin,AdminController.venueReq
 AdminRouter.get('/venuerequest/:venueId',jwtAdmin.verifyJwtAdmin,AdminController.getVenueById)
 AdminRouter.post('/venueaccept',jwtAdmin.verifyJwtAdmin,AdminController.venueAccepts)
 AdminRouter.post('/venuedecline',jwtAdmin.verifyJwtAdmin,AdminController.venueDecline)
+AdminRouter.get('/dashboard',jwtAdmin.verifyJwtAdmin,AdminController.adminDashboard)
 
 
 export default AdminRouter
