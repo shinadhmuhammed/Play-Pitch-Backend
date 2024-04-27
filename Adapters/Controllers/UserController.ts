@@ -13,6 +13,9 @@ import userService from "../../Business/services/userService";
 dotenv.config();
 import Stripe from "stripe";
 import Activity from "../DataAccess/Models/activityModel";
+import { Error } from "mongoose";
+import { UploadApiResponse } from "cloudinary";
+import { cloudinaryInstance } from "../../FrameWorks/Middlewares/cloudinary";
 
 try {
 } catch (error) {}
@@ -396,7 +399,12 @@ const editUserDetails = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
     const { username, email, phone } = req.body;
-    const profilePhotoUrl = req.file?.path;
+    let profilePhotoUrl;
+    if (req.file) {
+      const result: UploadApiResponse = await cloudinaryInstance.uploader.upload(req.file.path);
+      profilePhotoUrl = result.secure_url;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { username, email, phone, profilePhotoUrl },
@@ -444,7 +452,6 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
       ownerId,
       paymentMethod,
     } = req.body;
-    console.log(ownerId,'tuuuuuuuuuuuuuuuuuuuuuuurfIDddddddddddddddddd');
     const user = await userRepositary.getUserById(userIdString);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -485,8 +492,13 @@ const createActivity = async (req: Request, res: Response) => {
       user
     );
     res.status(201).json(newActivity);
-  } catch (error) {
-    res.status(500).json({ message: "internal server error" });
+  }catch (error:any) {
+    console.error(error);
+    if (error.message.includes("Activity with the same booking ID already exists")) {
+      res.status(400).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Activity alreay created" });
+    }
   }
 };
 
@@ -529,7 +541,6 @@ const activityRequest = async (req: CustomRequest, res: Response) => {
 
 const getRequest = async (req: CustomRequest, res: Response) => {
   try {
-    console.log('hello')
     const userId = req.id;
     const activity = await Activity.findOne({ userId });
     res.status(201).json(activity);
