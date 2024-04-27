@@ -43,6 +43,10 @@ const turfSchema=new mongoose.Schema({
         type: Number,
         required: true
     },
+    contactNumber:{
+        type:Number,
+        required:true
+    },
     longitude: {
         type: Number,
         required: true
