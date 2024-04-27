@@ -1,7 +1,6 @@
 import express from "express";
 import OwnerController from "../../Adapters/Controllers/OwnerController";
 import multer, { Multer } from "multer";
-
 import upload from "../Middlewares/multer";
 import jwtOwner from "../Middlewares/jwt/jwtOwner";
 
