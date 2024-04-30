@@ -515,6 +515,7 @@ const getActivity = async (req: CustomRequest, res: Response) => {
 
 const getActivityById = async (req: Request, res: Response) => {
   try {
+    console.log('hello')
     const { id } = req.params;
     const activity = await userService.getActivityById(id);
     res.json(activity);
@@ -590,6 +591,62 @@ const acceptedUserId = async (req: Request, res: Response) => {
 };
 
 
+const activity = async (req: Request, res: Response) => {
+  try {
+    const { activityId } = req.query; 
+    const activity = await Activity.findById(activityId);
+    res.status(200).json(activity);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+interface Chat {
+  sender: string;
+  message: string;
+  roomId:string;
+  chatUser:string;
+  timeStamp:Date;
+}
+
+const chatStoring = async (req: Request, res: Response) => {
+  try {
+    const { sender, message,roomId,chatUser } = req.body;
+    console.log(sender, message, roomId,chatUser,'sender', 'message');
+    const timeStamp = new Date();
+    const chat: Chat = { sender, message,timeStamp,roomId,chatUser }; 
+    const savedChatMessages = await userService.saveChatMessages(chat); 
+    console.log(savedChatMessages,'saveddddddddddddddddddd')
+    res.status(200).json(savedChatMessages);
+  } catch (error) {
+    console.error('Error storing chat message:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+const getChatMessages=async(req:Request,res:Response)=>{
+  try {
+    const {activityId}=req.query
+    const chatMessages=await userService.getChat(activityId)
+    res.status(200).json(chatMessages)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const getChatUser=async(req:Request,res:Response)=>{
+  try {
+      const{userId}=req.body
+      const chatUser=await userService.chatUser(userId)
+      res.status(200).json(chatUser)
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({message:"Internal Server Error"})
+  }
+}
 
 
 
@@ -625,4 +682,8 @@ export default {
   getRequest,
   acceptJoinRequest,
   acceptedUserId,
+  activity,
+  chatStoring,
+  getChatMessages,
+  getChatUser
 };
