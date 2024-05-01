@@ -12,6 +12,7 @@ import Owner from "../../Adapters/DataAccess/Models/ownerModel";
 import Admin from "../../Adapters/DataAccess/Models/adminModel";
 import Activity from "../../Adapters/DataAccess/Models/activityModel";
 import { request } from "express";
+import Chat from "../../Adapters/DataAccess/Models/chatModel";
 dotenv.config();
 
 interface ReqBody {
@@ -564,6 +565,52 @@ const addedUserId = async (activity: any) => {
 }
 
 
+interface Chat{
+  sender:string;
+  message:string;
+  roomId:string;
+  timeStamp:Date;
+  chatUser:string;
+}
+
+
+const saveChatMessages=async(chat:Chat)=>{
+  try {
+    const chatMessages=new Chat({
+      sender:chat.sender,
+      message:chat.message,
+      activityId:chat.roomId,
+      timeStamp:chat.timeStamp,
+      senderName:chat.chatUser
+    })
+
+    const saveChatMessages=await chatMessages.save()
+    return saveChatMessages
+  } catch (error) {
+    console.error('Error saving chat message:', error);
+    throw new Error('Failed to save chat message');
+  }
+}
+
+const getChat=async(activityId:any)=>{
+  try {
+    const getChat=await Chat.find({activityId })
+    return getChat
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const chatUser=async(userId:string)=>{
+      try {
+        const user=await userRepositary.findChatUser(userId)
+        return user
+      } catch (error) {
+        console.error('Error reciving user:', error);
+    throw new Error('Failed to get the chat user');
+      }
+}
+
 
 
 
@@ -593,5 +640,8 @@ export default {
   getActivity,
   getActivityById,
   activityRequest,
-  addedUserId
+  addedUserId,
+  saveChatMessages,
+  getChat,
+  chatUser
 };

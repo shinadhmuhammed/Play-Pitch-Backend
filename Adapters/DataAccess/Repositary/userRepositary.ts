@@ -124,6 +124,17 @@ const existingRequest=async(activityId:string,userId:string)=>{
 }
 
 
+const findChatUser=async(userId:string)=>{
+  try {
+        const user=await User.findById(userId)
+        console.log(user)
+        return user
+  } catch (error) {
+    console.error('Error reciving user:', error);
+    throw new Error('Failed to get the chat user');
+  }
+}
+
 
 
 export default {
@@ -138,5 +149,6 @@ export default {
   createActivity,
   getActivity,
   getActivityByBookingId,
-  existingRequest
+  existingRequest,
+  findChatUser
 };

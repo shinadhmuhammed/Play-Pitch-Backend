@@ -35,6 +35,10 @@ userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,UserController.acti
 userRouter.get("/getrequest",jwtUser.verifyJwtUser,UserController.getRequest)
 userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.acceptJoinRequest)
 userRouter.post("/requestedId",jwtUser.verifyJwtUser,UserController.acceptedUserId)
+userRouter.post("/activity",jwtUser.verifyJwtUser,UserController.activity)
+userRouter.post("/chat",jwtUser.verifyJwtUser,UserController.chatStoring)
+userRouter.get("/chatmessages",jwtUser.verifyJwtUser,UserController.getChatMessages)
+userRouter.post("/chatuser",jwtUser.verifyJwtUser,UserController.getChatUser)
 
 
 
