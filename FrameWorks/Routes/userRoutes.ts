@@ -18,6 +18,7 @@ userRouter.post("/verify-forgot", UserController.verifyForgot);
 userRouter.post("/google-login", UserController.googleAuth);
 userRouter.get("/getturf",jwtUser.verifyJwtUser, UserController.getTurf);
 userRouter.get('/getTurf/:id',jwtUser.verifyJwtUser,UserController.getSingleTurf)
+userRouter.post('/turfrating',jwtUser.verifyJwtUser,UserController.getTurfRating)
 userRouter.get('/getbooking',jwtUser.verifyJwtUser,UserController.getBooking)
 userRouter.get('/getbooking/:bookingId',jwtUser.verifyJwtUser,UserController.getBookingById)
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)
@@ -34,11 +35,18 @@ userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,UserController.getActi
 userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,UserController.activityRequest)
 userRouter.get("/getrequest",jwtUser.verifyJwtUser,UserController.getRequest)
 userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.acceptJoinRequest)
+userRouter.put("/declineJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.declineJoinRequest)
 userRouter.post("/requestedId",jwtUser.verifyJwtUser,UserController.acceptedUserId)
 userRouter.post("/activity",jwtUser.verifyJwtUser,UserController.activity)
 userRouter.post("/chat",jwtUser.verifyJwtUser,UserController.chatStoring)
 userRouter.get("/chatmessages",jwtUser.verifyJwtUser,UserController.getChatMessages)
 userRouter.post("/chatuser",jwtUser.verifyJwtUser,UserController.getChatUser)
+userRouter.post("/rating",jwtUser.verifyJwtUser,UserController.turfRating)
+userRouter.post("/getrating",jwtUser.verifyJwtUser,UserController.getRating)
+userRouter.post("/ratingUser",jwtUser.verifyJwtUser,UserController.getUserRating)
+userRouter.post("/storeToken",jwtUser.verifyJwtUser, UserController.storeToken);
+userRouter.post("/getTurfAverageRating", jwtUser.verifyJwtUser, UserController.getTurfAverageRating);
+
 
 
 
