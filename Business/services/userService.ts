@@ -13,6 +13,8 @@ import Admin from "../../Adapters/DataAccess/Models/adminModel";
 import Activity from "../../Adapters/DataAccess/Models/activityModel";
 import { request } from "express";
 import Chat from "../../Adapters/DataAccess/Models/chatModel";
+import Rating from "../../Adapters/DataAccess/Models/RatingModel";
+import sendNotification from "../utils/firebase";
 dotenv.config();
 
 interface ReqBody {
@@ -158,13 +160,12 @@ const bookingGetById = async (userId: any, bookingId: any) => {
       userId: userId,
       _id: bookingId,
     });
-    console.log(booking,'bopooooking')
     if (!booking) {
       throw new Error("Booking not found");
     }
     const user = await User.findById({ _id: userId });
     const turfDetails = await Turf.findOne({ _id: booking.turfId });
-    
+
     return { booking, turfDetails, user };
   } catch (error) {
     console.log(error);
@@ -200,7 +201,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const createStripeSession = async (
   totalPrice: number,
   selectedDate: string,
-  ownerId: string, 
+  ownerId: string,
   selectedStartTime: string,
   selectedEndTime: string,
   turfDetail: any
@@ -242,12 +243,11 @@ const createStripeSession = async (
       selectedEndTime
     )}&paymentMethod=online&totalPrice=${encodeURIComponent(
       totalPrice.toString()
-    )}&ownerId=${encodeURIComponent(ownerId)}`, 
+    )}&ownerId=${encodeURIComponent(ownerId)}`,
     cancel_url: "http://localhost:5173/booking-cancel",
   });
   return session.id;
 };
-
 
 const createBookingAndAdjustWallet = async (
   userId: string,
@@ -261,7 +261,7 @@ const createBookingAndAdjustWallet = async (
   try {
     const currentTime = new Date();
     const bookingData = {
-      ownerId: ownerId, 
+      ownerId: ownerId,
       turfId: turfId,
       date: date,
       userId: userId,
@@ -280,7 +280,7 @@ const createBookingAndAdjustWallet = async (
     const adminAmount = totalPrice * 0.1;
 
     const owner = await Owner.findOneAndUpdate(
-      { _id: ownerId }, 
+      { _id: ownerId },
       {
         $inc: { wallet: ownerAmount },
         $push: {
@@ -320,7 +320,6 @@ const createBookingAndAdjustWallet = async (
     throw new Error("Failed to create booking and adjust wallet");
   }
 };
-
 
 const getUserDetails = async (userId: string) => {
   try {
@@ -527,97 +526,188 @@ const getActivityById = async (id: string) => {
   }
 };
 
-const activityRequest = async (activityId: any, userId: any) => {
+const activityRequest = async (activityId: string, userId: string,username:string,phone:number) => {
   try {
     const activity = await Activity.findById(activityId);
     if (!activity) {
       throw new Error("Activity not found");
     }
 
-  
-
-    const existingRequest=await userRepositary.existingRequest(activityId,userId)
-    if(existingRequest){
-      throw new Error('Request already sent')
+    const existingRequest = await userRepositary.existingRequest(
+      activityId,
+      userId
+    );
+    if (existingRequest) {
+      throw new Error("Request already sent");
     }
-    activity.joinRequests.push({ user: userId, status: "pending" });
+    activity.joinRequests.push({ user: userId,username:username,phone:phone, status: "pending" });
+    const user=await User.findById(userId)
+    if(user?.notificationToken){
+      await sendNotification(user.notificationToken, { title: 'New Message', body: 'You have a new message!' });
+    }
     await activity.save();
-
     return activity;
   } catch (error) {
     throw error;
   }
-};  
+};
+
+const declinedRequest=async(activityId:string,joinRequestId:string)=>{
+  try {
+    const activity = await Activity.findById(activityId);
+    if(activity){
+    const joinRequest = activity.joinRequests.find(
+      (request) => request?._id?.toString() === joinRequestId
+    );
+    if(joinRequest){
+    joinRequest.status = "rejected"; 
+    }
+    await activity.save();
+  }
+  } catch (error) {
+    throw error
+  }
+}
+
+const acceptedRequest=async(activityId:string,joinRequestId:string)=>{
+  try {
+    const activity = await Activity.findById(activityId);
+    if(activity){
+    const joinRequest = activity.joinRequests.find(
+      (request) => request?._id?.toString() === joinRequestId
+    );
+    if(joinRequest){
+    joinRequest.status = "accepted"; 
+    }
+    await activity.save();
+  }
+  } catch (error) {
+    throw error
+  }
+}
 
 const addedUserId = async (activity: any) => {
   try {
     if (!activity.participants) {
       console.log("Participants array is empty or null");
-      return []; 
+      return [];
     }
-    const participantIds = activity.participants.map((participant: any) => participant);
-    const participantDetails = await User.find({_id: {$in: participantIds}});
+    const participantIds = activity.participants.map(
+      (participant: any) => participant
+    );
+    const participantDetails = await User.find({
+      _id: { $in: participantIds },
+    });
     return participantDetails;
   } catch (error) {
     console.log(error);
-
   }
+};
+
+interface Chat {
+  sender: string;
+  message: string;
+  roomId: string;
+  timeStamp: Date;
+  chatUser: string;
 }
 
-
-interface Chat{
-  sender:string;
-  message:string;
-  roomId:string;
-  timeStamp:Date;
-  chatUser:string;
-}
-
-
-const saveChatMessages=async(chat:Chat)=>{
+const saveChatMessages = async (chat: Chat) => {
   try {
-    const chatMessages=new Chat({
-      sender:chat.sender,
-      message:chat.message,
-      activityId:chat.roomId,
-      timeStamp:chat.timeStamp,
-      senderName:chat.chatUser
-    })
+    const chatMessages = new Chat({
+      sender: chat.sender,
+      message: chat.message,
+      activityId: chat.roomId,
+      timeStamp: chat.timeStamp,
+      senderName: chat.chatUser,
+    });
 
-    const saveChatMessages=await chatMessages.save()
-    return saveChatMessages
+    const saveChatMessages = await chatMessages.save();
+    return saveChatMessages;
   } catch (error) {
-    console.error('Error saving chat message:', error);
-    throw new Error('Failed to save chat message');
+    console.error("Error saving chat message:", error);
+    throw new Error("Failed to save chat message");
   }
-}
+};
 
-const getChat=async(activityId:any)=>{
+const getChat = async (activityId: any) => {
   try {
-    const getChat=await Chat.find({activityId })
-    return getChat
+    const getChat = await Chat.find({ activityId });
+    return getChat;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
-const chatUser=async(userId:string)=>{
-      try {
-        const user=await userRepositary.findChatUser(userId)
-        return user
-      } catch (error) {
-        console.error('Error reciving user:', error);
-    throw new Error('Failed to get the chat user');
-      }
-}
+const chatUser = async (userId: string) => {
+  try {
+    const user = await userRepositary.findChatUser(userId);
+    return user;
+  } catch (error) {
+    console.error("Error reciving user:", error);
+    throw new Error("Failed to get the chat user");
+  }
+};
+
+const getTurfRating = async (turfId: string) => {
+  try {
+    const turfs = await Rating.find({ turfId: turfId });
+    return turfs;
+  } catch (error) {}
+};
+
+const ratingSave = async (
+  userId: string,
+  turfId: string,
+  message: string,
+  rating: string,
+  userName: string
+) => {
+  try {
+    const newRating = new Rating({
+      userId,
+      turfId,
+      message,
+      rating,
+      userName,
+    });
+    const savedRating = await newRating.save();
+    return savedRating;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to save rating");
+  }
+};
+
+const getRating = async (userId: string) => {
+  try {
+    const ratings = await Rating.find({ userId: userId });
+    return ratings;
+  } catch (error) {
+    console.error(error);
+    throw new Error("Failed to get rating");
+  }
+};
 
 
+const usersRating = async (userId: string) => {
+  try {
+    const users = await User.findById(userId);
+    return users;
+  } catch (error) {
+    throw new Error("Failed to get user");
+  }
+};
 
 
-
-
-
-
+const getTurfRatings = async (turfId: string) => {
+  try {
+    const ratings = await Rating.find({ turfId });
+    return ratings;
+  } catch (error) {
+    throw new Error("Error fetching ratings for the turf");
+  }
+};
 
 
 export default {
@@ -640,8 +730,15 @@ export default {
   getActivity,
   getActivityById,
   activityRequest,
+  declinedRequest,
+  acceptedRequest,
   addedUserId,
   saveChatMessages,
   getChat,
-  chatUser
+  chatUser,
+  ratingSave,
+  getRating,
+  getTurfRating,
+  usersRating,
+  getTurfRatings
 };
