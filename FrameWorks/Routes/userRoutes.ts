@@ -4,7 +4,9 @@ import UserController from "../../Adapters/Controllers/UserController";
 import jwtUser from "../Middlewares/jwt/jwtUser";
 import { Multer } from "multer";
 import upload from "../Middlewares/multer";
+import ActivityController from "../../Adapters/Controllers/ActivityController";
 const multerUpload: Multer = upload;
+
 
 
 
@@ -29,23 +31,34 @@ userRouter.get("/userdetails",jwtUser.verifyJwtUser, UserController.getDetails);
 userRouter.post("/reset-password",jwtUser.verifyJwtUser, UserController.resetPassword);
 userRouter.post("/userDetailsEdit", multerUpload.single("profilePhoto"), jwtUser.verifyJwtUser, UserController.editUserDetails);
 userRouter.post("/cancelbooking",jwtUser.verifyJwtUser,UserController.cancelBooking)
-userRouter.post("/createactivity",jwtUser.verifyJwtUser,UserController.createActivity)
-userRouter.get("/getactivity",jwtUser.verifyJwtUser,UserController.getActivity)
-userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,UserController.getActivityById)
-userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,UserController.activityRequest)
-userRouter.get("/getrequest",jwtUser.verifyJwtUser,UserController.getRequest)
-userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.acceptJoinRequest)
-userRouter.put("/declineJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,UserController.declineJoinRequest)
-userRouter.post("/requestedId",jwtUser.verifyJwtUser,UserController.acceptedUserId)
-userRouter.post("/activity",jwtUser.verifyJwtUser,UserController.activity)
+
+
+userRouter.post("/createactivity",jwtUser.verifyJwtUser,ActivityController.createActivity);
+userRouter.get("/getactivity",jwtUser.verifyJwtUser,ActivityController.getActivity)
+userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,ActivityController.getActivityById)
+userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,ActivityController.activityRequest)
+userRouter.get("/getrequest",jwtUser.verifyJwtUser,ActivityController.getRequest)
+userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,ActivityController.acceptJoinRequest)
+userRouter.put("/declineJoinRequest/:activityId/:joinRequestId",jwtUser.verifyJwtUser,ActivityController.declineJoinRequest)
+userRouter.post("/requestedId",jwtUser.verifyJwtUser,ActivityController.acceptedUserId)
+userRouter.post("/activity",jwtUser.verifyJwtUser,ActivityController.activity)
+userRouter.put("/activities/:id", jwtUser.verifyJwtUser, ActivityController.editActivites);
+userRouter.post("/getActivity", jwtUser.verifyJwtUser, ActivityController.getActivities);
+userRouter.get("/searchActivity", jwtUser.verifyJwtUser, ActivityController.searchActivity);
+
 userRouter.post("/chat",jwtUser.verifyJwtUser,UserController.chatStoring)
 userRouter.get("/chatmessages",jwtUser.verifyJwtUser,UserController.getChatMessages)
 userRouter.post("/chatuser",jwtUser.verifyJwtUser,UserController.getChatUser)
 userRouter.post("/rating",jwtUser.verifyJwtUser,UserController.turfRating)
 userRouter.post("/getrating",jwtUser.verifyJwtUser,UserController.getRating)
 userRouter.post("/ratingUser",jwtUser.verifyJwtUser,UserController.getUserRating)
-userRouter.post("/storeToken",jwtUser.verifyJwtUser, UserController.storeToken);
+userRouter.post("/searchTurfName",jwtUser.verifyJwtUser,UserController.searchTurfName)
 userRouter.post("/getTurfAverageRating", jwtUser.verifyJwtUser, UserController.getTurfAverageRating);
+userRouter.post("/nearestTurf", jwtUser.verifyJwtUser, UserController.nearestTurf);
+userRouter.post("/getTurfSearchSuggestions", jwtUser.verifyJwtUser, UserController.getTurfSearchSuggestions);
+
+
+
 
 
 

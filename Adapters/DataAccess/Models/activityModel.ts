@@ -27,6 +27,8 @@ const activitySchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User'
         },
+        username:String,
+        phone:Number,
         status: {
             type: String,
             enum: ['pending', 'accepted', 'rejected'],

@@ -1,3 +1,4 @@
+import Rating from "../Models/RatingModel";
 import User from "../Models/UserModel";
 import Activity from "../Models/activityModel";
 import TurfBooking from "../Models/bookingModel";
@@ -135,7 +136,24 @@ const findChatUser=async(userId:string)=>{
   }
 }
 
+const ratingGet=async(userId:string)=>{
+  try {
+    const ratings=await Rating.findById({userId})
+    return ratings
+  } catch (error) {
+    
+  }
+}
 
+
+const searchTurfName = async (query: string) => {
+  try {
+    const searchResults = await Turf.find({ turfName: { $regex: query, $options: 'i' } });
+    return searchResults;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export default {
   findUser,
@@ -150,5 +168,7 @@ export default {
   getActivity,
   getActivityByBookingId,
   existingRequest,
-  findChatUser
+  findChatUser,
+  ratingGet,
+  searchTurfName
 };

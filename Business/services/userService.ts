@@ -542,9 +542,9 @@ const activityRequest = async (activityId: string, userId: string,username:strin
     }
     activity.joinRequests.push({ user: userId,username:username,phone:phone, status: "pending" });
     const user=await User.findById(userId)
-    if(user?.notificationToken){
-      await sendNotification(user.notificationToken, { title: 'New Message', body: 'You have a new message!' });
-    }
+    // if(user?.notificationToken){
+    //   await sendNotification(user.notificationToken, { title: 'New Message', body: 'You have a new message!' });
+    // }
     await activity.save();
     return activity;
   } catch (error) {
@@ -709,6 +709,72 @@ const getTurfRatings = async (turfId: string) => {
   }
 };
 
+const searchName=async(query:string)=>{
+  try {
+    const searchResults=await userRepositary.searchTurfName(query)
+    return searchResults
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+const fetchTurfSuggestionsFromDatabase = async (query:string) => {
+  try {
+    const regex = new RegExp(`^${query}`, 'i');
+    const turfs = await Turf.find({ turfName: regex }).limit(10); 
+    const suggestions = turfs.map((turf) => turf.turfName);
+    return suggestions;
+  } catch (error) {
+    console.error("Error fetching turf search suggestions:", error);
+    throw error; 
+  }
+};
+
+
+const activityResults=async(query:string)=>{
+  try {
+    const activities = await Activity.find({ activityName: { $regex: new RegExp(query, 'i') } });
+    return activities
+  } catch (error) {
+    throw error; 
+  }
+}
+
+const userActivities=async(userId:string)=>{
+  try {
+    const activities = await Activity.find({ userId });
+    return activities
+  } catch (error) {
+    throw error
+  }
+}
+
+
+const editActivites=async(id:string,activityName:string,maxPlayers:number,description:string)=>{
+  try {
+
+    const activity = await Activity.findById(id)
+
+    if(activity){
+
+    if (activityName) {
+      activity.activityName = activityName;
+    }
+    if (maxPlayers) {
+      activity.maxPlayers = maxPlayers;
+    }
+    if (description) {
+      activity.description = description;
+    }
+    await activity.save();
+  }
+    return activity
+  } catch (error) {
+    throw error
+  }
+}
+
 
 export default {
   createNewUser,
@@ -740,5 +806,10 @@ export default {
   getRating,
   getTurfRating,
   usersRating,
-  getTurfRatings
+  getTurfRatings,
+  searchName,
+  fetchTurfSuggestionsFromDatabase,
+  activityResults,
+  userActivities,
+  editActivites
 };

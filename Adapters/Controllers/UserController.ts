@@ -11,13 +11,10 @@ import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import userService from "../../Business/services/userService";
 dotenv.config();
-import Stripe from "stripe";
 import Activity from "../DataAccess/Models/activityModel";
-import { Error } from "mongoose";
 import { UploadApiResponse } from "cloudinary";
 import { cloudinaryInstance } from "../../FrameWorks/Middlewares/cloudinary";
-import Rating from "../DataAccess/Models/RatingModel";
-import sendNotification from "../../Business/utils/firebase";
+import Turf from "../DataAccess/Models/turfModel";
 
 try {
 } catch (error) {}
@@ -220,7 +217,7 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;
-  console.log(credential,'credintialsss')
+  console.log(credential, "credintialsss");
   try {
     const { token, user } = await userService.authenticateWithGoogle(
       credential
@@ -503,151 +500,6 @@ const payWithWallet = async (req: CustomRequest, res: Response) => {
   }
 };
 
-const createActivity = async (req: Request, res: Response) => {
-  try {
-    const { formData, bookingDetails, turfDetails, user } = req.body;
-    console.log(formData, bookingDetails);
-    const newActivity = await userService.createActivity(
-      formData,
-      bookingDetails,
-      turfDetails,
-      user
-    );
-    res.status(201).json(newActivity);
-  } catch (error: any) {
-    console.error(error);
-    if (
-      error.message.includes("Activity with the same booking ID already exists")
-    ) {
-      res.status(400).json({ message: error.message });
-    } else {
-      res.status(500).json({ message: "Activity alreay created" });
-    }
-  }
-};
-
-const getActivity = async (req: CustomRequest, res: Response) => {
-  try {
-    const userId = req.id;
-    const activity = await userService.getActivity();
-    res.status(201).json({ userId, activity });
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-const getActivityById = async (req: Request, res: Response) => {
-  try {
-    console.log("hello");
-    const { id } = req.params;
-    const activity = await userService.getActivityById(id);
-    res.json(activity);
-  } catch (error) {
-    console.error("Error fetching activity details:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-const activityRequest = async (req: CustomRequest, res: Response) => {
-  const activityId = req.params.id;
-  const {username,phone}=req.body
-  const userId = req.id;
-  try {
-    if (userId) {
-      const activity = await userService.activityRequest(activityId, userId,username,phone);
-      res.status(201).json(activity);
-    }
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-const getRequest = async (req: CustomRequest, res: Response) => {
-  try {
-    const userId = req.id;
-    const activity = await Activity.findOne({ userId });
-    res.status(201).json(activity);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server Error" });
-  }
-};
-
-const acceptJoinRequest = async (req: Request, res: Response) => {
-  const { activityId, joinRequestId } = req.params;
-  try {
-    const activity = await Activity.findById(activityId);
-    if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
-    const joinRequest = activity.joinRequests.find(
-      (request) => request?._id?.toString() === joinRequestId
-    );
-    if (!joinRequest) {
-      return res.status(404).json({ message: "Join request not found" });
-    }
-    joinRequest.status = "accepted";
-    if (joinRequest.user) {
-      activity.participants.push(joinRequest.user);
-    } else {
-      console.error("User not found for join request:", joinRequestId);
-    }
-
-    await activity.save();
-
-    res.status(200).json({ message: "Join request accepted successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server Error" });
-  }
-};
-
-const declineJoinRequest = async (req: Request, res: Response) => {
-  const { activityId, joinRequestId } = req.params;
-  try {
-    const activity = await Activity.findById(activityId);
-    if (!activity) {
-      return res.status(404).json({ message: "Activity not found" });
-    }
-    const joinRequest = activity.joinRequests.find(
-      (request) => request?._id?.toString() === joinRequestId
-    );
-    if (!joinRequest) {
-      return res.status(404).json({ message: "Join request not found" });
-    }
-    joinRequest.status = "rejected"; 
-    
-    await activity.save();
-
-    res.status(200).json({ message: "Join request declined successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal server Error" });
-  }
-};
-
-
-const acceptedUserId = async (req: Request, res: Response) => {
-  try {
-    const { activity } = req.body;
-    const participantDetails = await userService.addedUserId(activity);
-    res.status(200).json(participantDetails);
-  } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
-const activity = async (req: Request, res: Response) => {
-  try {
-    const { activityId } = req.query;
-    const activity = await Activity.findById(activityId);
-    res.status(200).json(activity);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
-
 interface Chat {
   sender: string;
   message: string;
@@ -717,17 +569,17 @@ const getRating = async (req: Request, res: Response) => {
     const ratings = await userService.getRating(userId);
     res.status(200).json(ratings);
   } catch (error) {
-    res.status(500).json({ message: "Internal server Error" })
+    res.status(500).json({ message: "Internal server Error" });
   }
 };
 
 const getUserRating = async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
-    const users = await userService.usersRating(userId)
+    const users = await userService.usersRating(userId);
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ message: "Internal server Error" })
+    res.status(500).json({ message: "Internal server Error" });
   }
 };
 
@@ -741,7 +593,10 @@ const getTurfAverageRating = async (req: Request, res: Response) => {
       return;
     }
 
-    const totalRating = ratings.reduce((acc, curr) => acc + parseInt(curr.rating), 0);
+    const totalRating = ratings.reduce(
+      (acc, curr) => acc + parseInt(curr.rating),
+      0
+    );
     const averageRating = totalRating / ratings.length;
     const maxRating = 5;
     const ratingOutOfFive = (averageRating / maxRating) * 5;
@@ -752,29 +607,48 @@ const getTurfAverageRating = async (req: Request, res: Response) => {
   }
 };
 
-
-
-
-
-const storeToken = async (req: CustomRequest, res: Response) => {
+const nearestTurf = async (req: Request, res: Response) => {
+  const { latitude, longitude, query } = req.body;
   try {
-    const { token } = req.body;
-    const userId = req.id;
-    console.log(userId);
-   await User.findByIdAndUpdate(userId, { $set: { notificationToken: token } });
-    res.status(200).json({ message: 'Token stored successfully' });
+    const nearbyTurfs = await Turf.find({
+      latitude: { $gt: latitude - 0.1, $lt: latitude + 0.1 },
+      longitude: { $gt: longitude - 0.1, $lt: longitude + 0.1 },
+    });
+    res.status(200).json({
+      success: true,
+      nearestTurf: nearbyTurfs[0],
+    });
   } catch (error) {
-    console.error('Error storing token:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error finding nearest turf:", error);
+    res
+      .status(500)
+      .json({ success: false, error: "Error finding nearest turf" });
   }
 };
 
+const searchTurfName = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.body;
+    const searchResults = await userService.searchName(query);
+    res.json(searchResults);
+  } catch (error) {
+    console.error("Error searching turf names:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
-
-
-
-
-
+const getTurfSearchSuggestions = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.body;
+    const suggestions = await userService.fetchTurfSuggestionsFromDatabase(
+      query
+    );
+    res.json({ suggestions });
+  } catch (error) {
+    console.error("Error fetching turf search suggestions:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 export default {
   signup,
@@ -799,15 +673,6 @@ export default {
   editUserDetails,
   cancelBooking,
   payWithWallet,
-  createActivity,
-  getActivity,
-  getActivityById,
-  activityRequest,
-  getRequest,
-  acceptJoinRequest,
-  declineJoinRequest,
-  acceptedUserId,
-  activity,
   chatStoring,
   getChatMessages,
   getChatUser,
@@ -815,5 +680,7 @@ export default {
   getRating,
   getUserRating,
   getTurfAverageRating,
-  storeToken
+  nearestTurf,
+  searchTurfName,
+  getTurfSearchSuggestions,
 };

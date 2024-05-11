@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
             enum:['debit','credit']
         }
     }
-]
+],
 });
 
 

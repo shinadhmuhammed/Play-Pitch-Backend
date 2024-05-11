@@ -42,7 +42,6 @@ const verifyJwtUser = async (req: CustomRequest, res: Response, next: NextFuncti
 const generateToken = (id: string, role?: string) => { 
   const secretKey = process.env.USER_SECRET_KEY;
   
-  
   if (!secretKey) {
       throw new Error('User secret key is not defined');
   }

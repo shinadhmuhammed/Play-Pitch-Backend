@@ -134,9 +134,8 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       price: {},
     });
 
-    // Assign prices for each court type
     courtTypes.forEach((type: string) => {
-      // Check if the price for the current court type exists
+      
       if (prices.hasOwnProperty(type)) {
         newTurf.price[type] = prices[type];
       } else {
