@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import JwtUser from "../../FrameWorks/Middlewares/jwt/jwtUser";
 import userRepositary from "../DataAccess/Repositary/userRepositary";
 import User from "../DataAccess/Models/UserModel";
@@ -11,7 +11,6 @@ import { OAuth2Client } from "google-auth-library";
 import dotenv from "dotenv";
 import userService from "../../Business/services/userService";
 dotenv.config();
-import Activity from "../DataAccess/Models/activityModel";
 import { UploadApiResponse } from "cloudinary";
 import { cloudinaryInstance } from "../../FrameWorks/Middlewares/cloudinary";
 import Turf from "../DataAccess/Models/turfModel";
@@ -101,8 +100,12 @@ const verifyOtp = async (
     const token = req.cookies.otp;
     console.log("Received OTP token:", token);
 
-    const jwtOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
-    console.log(jwtOtp);
+    const secretKey = process.env.USER_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("Secret key is not defined in environment variables");
+    }
+
+    const jwtOtp: JwtPayload | string = jwt.verify(token, secretKey);
 
     if (typeof jwtOtp === "string") {
       res
@@ -184,14 +187,21 @@ const verifyForgot = async (req: Request, res: Response) => {
   try {
     const { otp } = req.body;
     const token = req.cookies.forgotOtp;
-    const jwtfogotOtp: JwtPayload | string = jwt.verify(token, "Hello@123!");
-    console.log(jwtfogotOtp);
+
+    const secretKey = process.env.USER_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("Secret key is not defined in environment variables");
+    }
+
+    const jwtfogotOtp: JwtPayload | string = jwt.verify(token, secretKey);
+
     if (typeof jwtfogotOtp === "string") {
       res
         .status(400)
         .json({ status: 400, message: "invalid or expired token" });
       return;
     }
+
     if (otp === jwtfogotOtp.id) {
       res
         .status(200)
@@ -217,7 +227,6 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;
-  console.log(credential, "credintialsss");
   try {
     const { token, user } = await userService.authenticateWithGoogle(
       credential
@@ -348,7 +357,6 @@ const stripeBooking = async (req: CustomRequest, res: Response) => {
       selectedEndTime,
       totalPrice
     );
-    console.log("Booking entry created successfully:", createdBooking);
     res.status(201).json(createdBooking);
   } catch (error) {
     console.error("Error occurred while creating booking entry:", error);
@@ -363,7 +371,6 @@ const getDetails = async (req: CustomRequest, res: Response) => {
     if (!userId) {
       return res.status(400).json({ error: "User ID is missing" });
     }
-    console.log(userId);
 
     const user = await userService.getUserDetails(userId);
 
@@ -382,7 +389,6 @@ const userDetailsEdit = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
     const { formData } = req.body;
-    console.log(req.body);
     if (!userId) {
       return res.status(400).json({ error: "User ID is missing" });
     }
@@ -446,7 +452,7 @@ const cancelBooking = async (req: Request, res: Response) => {
   const { id } = req.body;
   try {
     const booking = await userService.UserCancelBooking(id);
-    console.log(booking);
+
     res.status(200).json(booking);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });

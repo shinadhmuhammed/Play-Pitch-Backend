@@ -1,12 +1,13 @@
+import activityService from "../../Business/services/activityService";
 import userService from "../../Business/services/userService";
 import Activity from "../DataAccess/Models/activityModel";
 import { Request, Response } from "express";
 
+
 const createActivity = async (req: Request, res: Response) => {
   try {
     const { formData, bookingDetails, turfDetails, user } = req.body;
-    console.log(formData, bookingDetails);
-    const newActivity = await userService.createActivity(
+    const newActivity = await activityService.createActivity(
       formData,
       bookingDetails,
       turfDetails,
@@ -28,7 +29,7 @@ const createActivity = async (req: Request, res: Response) => {
 const getActivity = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
-    const activity = await userService.getActivity();
+    const activity = await activityService.getActivity();
     res.status(201).json({ userId, activity });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -37,9 +38,8 @@ const getActivity = async (req: CustomRequest, res: Response) => {
 
 const getActivityById = async (req: Request, res: Response) => {
   try {
-    console.log("hello");
     const { id } = req.params;
-    const activity = await userService.getActivityById(id);
+    const activity = await activityService.getActivityById(id);
     res.json(activity);
   } catch (error) {
     console.error("Error fetching activity details:", error);
@@ -59,7 +59,7 @@ const activityRequest = async (req: CustomRequest, res: Response) => {
   const userId = req.id;
   try {
     if (userId) {
-      const activity = await userService.activityRequest(
+      const activity = await activityService.activityRequest(
         activityId,
         userId,
         username,
@@ -76,6 +76,7 @@ const getRequest = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
     const activity = await Activity.findOne({ userId });
+    console.log(activity)
     res.status(201).json(activity);
   } catch (error) {
     console.error(error);
@@ -139,7 +140,7 @@ const declineJoinRequest = async (req: Request, res: Response) => {
 const acceptedUserId = async (req: Request, res: Response) => {
   try {
     const { activity } = req.body;
-    const participantDetails = await userService.addedUserId(activity);
+    const participantDetails = await activityService.addedUserId(activity);
     res.status(200).json(participantDetails);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -162,7 +163,7 @@ const editActivites = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { activityName, maxPlayers, description } = req.body;
     try {
-      const editActivity = await userService.editActivites(
+      const editActivity = await activityService.editActivites(
         id,
         activityName,
         maxPlayers,
@@ -181,7 +182,7 @@ const editActivites = async (req: Request, res: Response) => {
   const getActivities = async (req: Request, res: Response) => {
     const { userId } = req.body;
     try {
-      const userActivity = await userService.userActivities(userId);
+      const userActivity = await activityService.userActivities(userId);
       res.json({ success: true, userActivity });
     } catch (error) {
       res.status(500).json({ success: false, message: "Internal server error" });
@@ -201,6 +202,8 @@ const editActivites = async (req: Request, res: Response) => {
       res.status(500).json({ success: false, message: "Internal server error" });
     }
   };
+
+
 
 export default {
   createActivity,

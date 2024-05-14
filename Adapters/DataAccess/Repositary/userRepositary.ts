@@ -104,14 +104,27 @@ const createActivity=async(activityData:any)=>{
   }
 }
 
-const getActivity=async()=>{
+const getActivity = async () => {
   try {
-    const activity=await Activity.find()
-    return activity
+    const currentDate = new Date();
+
+    const activities = await Activity.find();
+    await Promise.all(activities.map(async activity => {
+      const activityDate = new Date(activity.date);
+      if (currentDate >= activityDate ) {
+        activity.status = "completed";
+        await activity.save();
+      }
+    }));
+    const ongoingActivities = activities.filter(activity => activity.status === "ongoing");
+
+    return ongoingActivities;
   } catch (error) {
-    console.log(error)
+    console.log(error);
+    throw error;
   }
-}
+};
+
 
 const existingRequest=async(activityId:string,userId:string)=>{
   try {

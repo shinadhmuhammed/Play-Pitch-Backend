@@ -6,7 +6,6 @@ import OwnerRouter from "./FrameWorks/Routes/ownerRoutes";
 import AdminRouter from "./FrameWorks/Routes/adminRoutes";
 import cookieParser from "cookie-parser";
 import db from "./FrameWorks/Database/dbconnect";
-import { Server as HttpServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import http from "http";
 import configureSocket from "./Business/utils/socket";
@@ -24,7 +23,6 @@ app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: "*"
   })
 );
 app.use(express.json());

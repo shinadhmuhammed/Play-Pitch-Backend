@@ -14,7 +14,6 @@ import Activity from "../../Adapters/DataAccess/Models/activityModel";
 import { request } from "express";
 import Chat from "../../Adapters/DataAccess/Models/chatModel";
 import Rating from "../../Adapters/DataAccess/Models/RatingModel";
-import sendNotification from "../utils/firebase";
 dotenv.config();
 
 interface ReqBody {

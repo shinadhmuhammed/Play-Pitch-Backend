@@ -67,6 +67,11 @@ const activitySchema = new mongoose.Schema({
     address:{
         type:String,
         required:true
+    },
+    status: {
+        type: String,
+        enum: ['ongoing', 'completed'], 
+        default: 'ongoing' 
     }
 });
 
