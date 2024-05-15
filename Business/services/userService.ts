@@ -363,7 +363,6 @@ const resetPassword = async (userId: string, newPassword: string) => {
 const UserCancelBooking = async (id: string) => {
   try {
     const cancellationTime = new Date();
-    console.log(cancellationTime, "cancel time");
     const booking = await TurfBooking.findOneAndUpdate(
       { _id: id, bookingStatus: "confirmed" },
       { $set: { bookingStatus: "cancelled" } },
@@ -381,11 +380,8 @@ const UserCancelBooking = async (id: string) => {
         0,
         0
       );
-      console.log(bookingTime, "bookingTime");
       const timeDifference = bookingTime.getTime() - cancellationTime.getTime();
       const hoursDifference = Math.floor(timeDifference / (1000 * 60 * 60));
-      console.log(hoursDifference, "hoursDifference");
-      console.log(booking.totalPrice, "totalPrice");
       if (hoursDifference < 1) {
         refundAmount = 0;
       } else if (hoursDifference < 10) {
@@ -394,15 +390,12 @@ const UserCancelBooking = async (id: string) => {
         refundAmount = booking.totalPrice;
       }
     }
-    console.log(refundAmount, "refundamount");
 
     const turf = await Turf.findById(booking?.turfId);
-    console.log(turf);
     const user = await User.findById(booking?.userId);
 
     if (user) {
       user.wallet += refundAmount;
-      console.log(user.wallet, "userwallet");
       const walletStatement = {
         date: new Date(),
         walletType: "refund",
@@ -492,7 +485,6 @@ const createActivity = async (
     date: bookingDetails.date,
     address: turfDetails.address,
   };
-  console.log(activityData, "activityData");
   try {
     const existingActivity = await userRepositary.getActivityByBookingId(
       bookingDetails._id
