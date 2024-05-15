@@ -202,19 +202,7 @@ const resetPassword = async (ownerId: string, newPassword: string) => {
   }
 };
 
-interface OwnerModel extends Document {
-  email: string;
-  phone: string;
-  password: string;
-  wallet: number;
-  walletStatements: Array<{
-    date: Date;
-    walletType: string;
-    amount: number;
-    turfName: string;
-    transactionType: string;
-  }>;
-}
+
 
 const ownerCancelBooking = async (turfId: string, bookingId: string) => {
   try {

@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "http://playpitch.vercel.app",
+    origin: "https://playpitch.vercel.app",
   },
 });
 
