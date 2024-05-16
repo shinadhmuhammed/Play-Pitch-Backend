@@ -1,11 +1,10 @@
 {
   "name": "playpitch",
   "version": "1.0.0",
-  "description": "",
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.ts"
+    "start": "tsc && nodemon ./dist/server.js"
   },
   "author": "",
   "license": "ISC",
@@ -43,5 +42,6 @@
     "@types/passport": "^1.0.16",
     "@types/passport-google-oauth20": "^2.0.14",
     "typescript": "^5.4.2"
-  }
+  },
+  "description": ""
 }

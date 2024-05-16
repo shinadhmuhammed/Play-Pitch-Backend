@@ -129,6 +129,7 @@ const createActivity = async (
     }
   };
   
+  
 
   const editActivites=async(id:string,activityName:string,maxPlayers:number,description:string)=>{
     try {
