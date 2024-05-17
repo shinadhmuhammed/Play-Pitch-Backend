@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const activityService_1 = __importDefault(require("../../Business/services/activityService"));
 const userService_1 = __importDefault(require("../../Business/services/userService"));
+const UserModel_1 = __importDefault(require("../DataAccess/Models/UserModel"));
 const activityModel_1 = __importDefault(require("../DataAccess/Models/activityModel"));
 const createActivity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -182,6 +183,18 @@ const searchActivity = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
+const userPhoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('started');
+    const { userId } = req.body;
+    console.log(userId, 'ioioioio');
+    try {
+        const user = yield UserModel_1.default.findById(userId);
+        res.status(200).json(user);
+    }
+    catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+});
 exports.default = {
     createActivity,
     getActivity,
@@ -194,5 +207,6 @@ exports.default = {
     activity,
     editActivites,
     getActivities,
-    searchActivity
+    searchActivity,
+    userPhoto
 };

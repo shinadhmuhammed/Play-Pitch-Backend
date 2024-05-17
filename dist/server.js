@@ -17,7 +17,7 @@ const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
-        origin: "https://playpitch.vercel.app",
+        origin: "https://play-pitch.vercel.app/",
     },
 });
 app.use((0, cookie_parser_1.default)());

@@ -36,6 +36,7 @@ userRouter.get("/getactivity", jwtUser_1.default.verifyJwtUser, ActivityControll
 userRouter.get("/getactivityid/:id", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.getActivityById);
 userRouter.post("/activityrequest/:id", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.activityRequest);
 userRouter.get("/getrequest", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.getRequest);
+userRouter.get("/userPhoto", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.userPhoto);
 userRouter.put("/acceptJoinRequest/:activityId/:joinRequestId", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.acceptJoinRequest);
 userRouter.put("/declineJoinRequest/:activityId/:joinRequestId", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.declineJoinRequest);
 userRouter.post("/requestedId", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.acceptedUserId);

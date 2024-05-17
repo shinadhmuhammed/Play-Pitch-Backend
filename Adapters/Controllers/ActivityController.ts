@@ -1,5 +1,6 @@
 import activityService from "../../Business/services/activityService";
 import userService from "../../Business/services/userService";
+import User from "../DataAccess/Models/UserModel";
 import Activity from "../DataAccess/Models/activityModel";
 import { Request, Response } from "express";
 
@@ -205,6 +206,7 @@ const editActivites = async (req: Request, res: Response) => {
 
 
 
+
 export default {
   createActivity,
   getActivity,
@@ -217,5 +219,6 @@ export default {
   activity,
   editActivites,
   getActivities,
-  searchActivity
+  searchActivity,
+  userPhoto
 };
