@@ -19,8 +19,10 @@ userRouter.post("/sendotp", UserController.sendOtp);
 userRouter.post("/verify-forgot", UserController.verifyForgot);
 userRouter.post("/google-login", UserController.googleAuth);
 userRouter.get("/getturf",jwtUser.verifyJwtUser, UserController.getTurf);
+userRouter.get("/getturfs", UserController.getTurf);
 userRouter.get('/getTurf/:id',jwtUser.verifyJwtUser,UserController.getSingleTurf)
-userRouter.post('/turfrating',jwtUser.verifyJwtUser,UserController.getTurfRating)
+userRouter.get('/getTurfs/:id',UserController.getSingleTurf)
+userRouter.post('/turfrating',UserController.getTurfRating)
 userRouter.get('/getbooking',jwtUser.verifyJwtUser,UserController.getBooking)
 userRouter.get('/getbooking/:bookingId',jwtUser.verifyJwtUser,UserController.getBookingById)
 userRouter.post('/slotavailability',jwtUser.verifyJwtUser,UserController.checkSlotAvailibility)
@@ -53,8 +55,9 @@ userRouter.post("/rating",jwtUser.verifyJwtUser,UserController.turfRating)
 userRouter.post("/getrating",jwtUser.verifyJwtUser,UserController.getRating)
 userRouter.post("/ratingUser",jwtUser.verifyJwtUser,UserController.getUserRating)
 userRouter.post("/searchTurfName",jwtUser.verifyJwtUser,UserController.searchTurfName)
-userRouter.post("/getTurfAverageRating", jwtUser.verifyJwtUser, UserController.getTurfAverageRating);
-userRouter.post("/nearestTurf", jwtUser.verifyJwtUser, UserController.nearestTurf);
+userRouter.post("/searchTurfNames",UserController.searchTurfName)
+userRouter.post("/getTurfAverageRating",  UserController.getTurfAverageRating);
+userRouter.post("/nearestTurf",  UserController.nearestTurf);
 userRouter.post("/getTurfSearchSuggestions", jwtUser.verifyJwtUser, UserController.getTurfSearchSuggestions);
 
 

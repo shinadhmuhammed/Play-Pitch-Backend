@@ -220,5 +220,4 @@ export default {
   editActivites,
   getActivities,
   searchActivity,
-  userPhoto
 };
