@@ -232,7 +232,7 @@ const createStripeSession = async (
     ],
     customer: customer.id,
     mode: "payment",
-    success_url: `http://localhost:5173/booking-verification?turfId=${encodeURIComponent(
+    success_url: `https://playpitch.online/booking-verification?turfId=${encodeURIComponent(
       turfDetail._id
     )}&date=${encodeURIComponent(
       selectedDate
