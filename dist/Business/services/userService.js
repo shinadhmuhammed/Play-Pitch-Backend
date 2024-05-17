@@ -192,7 +192,7 @@ const createStripeSession = (totalPrice, selectedDate, ownerId, selectedStartTim
         ],
         customer: customer.id,
         mode: "payment",
-        success_url: `http://localhost:5173/booking-verification?turfId=${encodeURIComponent(turfDetail._id)}&date=${encodeURIComponent(selectedDate)}&selectedStartTime=${encodeURIComponent(selectedStartTime)}&selectedEndTime=${encodeURIComponent(selectedEndTime)}&paymentMethod=online&totalPrice=${encodeURIComponent(totalPrice.toString())}&ownerId=${encodeURIComponent(ownerId)}`,
+        success_url: `https://playpitch.online/booking-verification?turfId=${encodeURIComponent(turfDetail._id)}&date=${encodeURIComponent(selectedDate)}&selectedStartTime=${encodeURIComponent(selectedStartTime)}&selectedEndTime=${encodeURIComponent(selectedEndTime)}&paymentMethod=online&totalPrice=${encodeURIComponent(totalPrice.toString())}&ownerId=${encodeURIComponent(ownerId)}`,
         cancel_url: "http://localhost:5173/booking-cancel",
     });
     return session.id;

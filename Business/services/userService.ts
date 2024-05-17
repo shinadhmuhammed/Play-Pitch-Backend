@@ -232,7 +232,7 @@ const createStripeSession = async (
     ],
     customer: customer.id,
     mode: "payment",
-    success_url: `https://playpitch.online/booking-verification?turfId=${encodeURIComponent(
+    success_url: `https://play-pitch.vercel.app/booking-verification?turfId=${encodeURIComponent(
       turfDetail._id
     )}&date=${encodeURIComponent(
       selectedDate
@@ -243,7 +243,7 @@ const createStripeSession = async (
     )}&paymentMethod=online&totalPrice=${encodeURIComponent(
       totalPrice.toString()
     )}&ownerId=${encodeURIComponent(ownerId)}`,
-    cancel_url: "http://localhost:5173/booking-cancel",
+    cancel_url: "https://play-pitch.vercel.app/booking-cancel",
   });
   return session.id;
 };
