@@ -14,6 +14,7 @@ dotenv.config();
 import { UploadApiResponse } from "cloudinary";
 import { cloudinaryInstance } from "../../FrameWorks/Middlewares/cloudinary";
 import Turf from "../DataAccess/Models/turfModel";
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 try {
 } catch (error) {}
@@ -216,7 +217,6 @@ const verifyForgot = async (req: Request, res: Response) => {
 
 const getTurf = async (req: Request, res: Response) => {
   try {
-    console.log('haiiiii')
     const turf = await userRepositary.turfGet();
     res.status(200).json(turf);
   } catch (error) {
@@ -224,7 +224,7 @@ const getTurf = async (req: Request, res: Response) => {
   }
 };  
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 const googleAuth = async (req: Request, res: Response) => {
   const { credential } = req.body;

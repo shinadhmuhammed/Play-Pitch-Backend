@@ -35,6 +35,7 @@ userRouter.post("/userDetailsEdit", multerUpload.single("profilePhoto"), jwtUser
 userRouter.post("/cancelbooking", jwtUser_1.default.verifyJwtUser, UserController_1.default.cancelBooking);
 userRouter.post("/createactivity", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.createActivity);
 userRouter.get("/getactivity", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.getActivity);
+userRouter.get("/getactivities", ActivityController_1.default.getActivity);
 userRouter.get("/getactivityid/:id", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.getActivityById);
 userRouter.post("/activityrequest/:id", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.activityRequest);
 userRouter.get("/getrequest", jwtUser_1.default.verifyJwtUser, ActivityController_1.default.getRequest);

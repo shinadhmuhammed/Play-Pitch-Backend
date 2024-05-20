@@ -25,6 +25,7 @@ const userService_1 = __importDefault(require("../../Business/services/userServi
 dotenv_1.default.config();
 const cloudinary_1 = require("../../FrameWorks/Middlewares/cloudinary");
 const turfModel_1 = __importDefault(require("../DataAccess/Models/turfModel"));
+const client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 try {
 }
 catch (error) { }
@@ -182,7 +183,6 @@ const verifyForgot = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 const getTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('haiiiii');
         const turf = yield userRepositary_1.default.turfGet();
         res.status(200).json(turf);
     }
@@ -190,7 +190,6 @@ const getTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ message: "Internal server error" });
     }
 });
-const client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const googleAuth = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { credential } = req.body;
     try {

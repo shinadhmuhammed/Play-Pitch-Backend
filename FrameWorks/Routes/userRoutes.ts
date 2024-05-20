@@ -37,6 +37,7 @@ userRouter.post("/cancelbooking",jwtUser.verifyJwtUser,UserController.cancelBook
 
 userRouter.post("/createactivity",jwtUser.verifyJwtUser,ActivityController.createActivity);
 userRouter.get("/getactivity",jwtUser.verifyJwtUser,ActivityController.getActivity)
+userRouter.get("/getactivities",ActivityController.getActivity)
 userRouter.get("/getactivityid/:id",jwtUser.verifyJwtUser,ActivityController.getActivityById)
 userRouter.post("/activityrequest/:id",jwtUser.verifyJwtUser,ActivityController.activityRequest)
 userRouter.get("/getrequest",jwtUser.verifyJwtUser,ActivityController.getRequest)
