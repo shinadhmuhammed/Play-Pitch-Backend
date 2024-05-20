@@ -77,7 +77,6 @@ const getRequest = async (req: CustomRequest, res: Response) => {
   try {
     const userId = req.id;
     const activity = await Activity.findOne({ userId });
-    console.log(activity)
     res.status(201).json(activity);
   } catch (error) {
     console.error(error);

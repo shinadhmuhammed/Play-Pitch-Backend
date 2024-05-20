@@ -182,6 +182,7 @@ const verifyForgot = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 });
 const getTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log('haiiiii');
         const turf = yield userRepositary_1.default.turfGet();
         res.status(200).json(turf);
     }

@@ -70,7 +70,6 @@ const getRequest = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const userId = req.id;
         const activity = yield activityModel_1.default.findOne({ userId });
-        console.log(activity);
         res.status(201).json(activity);
     }
     catch (error) {

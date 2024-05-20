@@ -216,12 +216,13 @@ const verifyForgot = async (req: Request, res: Response) => {
 
 const getTurf = async (req: Request, res: Response) => {
   try {
+    console.log('haiiiii')
     const turf = await userRepositary.turfGet();
     res.status(200).json(turf);
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
-};
+};  
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
