@@ -203,6 +203,19 @@ const editActivites = async (req: Request, res: Response) => {
     }
   };
 
+  const getProfilePhoto=async(req:Request,res:Response)=>{
+    try {
+      console.log('started')
+      const {userId}=req.body
+      console.log(userId,'klklklklklkl')
+      const user=await activityService.profilePhoto(userId)
+      res.status(200).json(user)
+      console.log(user,'klklkl')
+    } catch (error) {
+      
+    }
+  }
+
 
 
 
@@ -219,4 +232,5 @@ export default {
   editActivites,
   getActivities,
   searchActivity,
+  getProfilePhoto
 };

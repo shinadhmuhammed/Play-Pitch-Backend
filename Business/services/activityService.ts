@@ -166,6 +166,16 @@ const createActivity = async (
   }
 
 
+  const profilePhoto=async(userId:string)=>{
+    try {
+      const user=await User.findById(userId)
+      return user
+    } catch (error) {
+      throw error
+    }
+  }
+
+
   export default {
     createActivity ,
     getActivity,
@@ -175,5 +185,6 @@ const createActivity = async (
     acceptedRequest,
     addedUserId ,
     editActivites,
-    userActivities
+    userActivities,
+    profilePhoto
   }

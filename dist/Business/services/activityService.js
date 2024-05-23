@@ -155,6 +155,15 @@ const userActivities = (userId) => __awaiter(void 0, void 0, void 0, function* (
         throw error;
     }
 });
+const profilePhoto = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = yield UserModel_1.default.findById(userId);
+        return user;
+    }
+    catch (error) {
+        throw error;
+    }
+});
 exports.default = {
     createActivity,
     getActivity,
@@ -164,5 +173,6 @@ exports.default = {
     acceptedRequest,
     addedUserId,
     editActivites,
-    userActivities
+    userActivities,
+    profilePhoto
 };

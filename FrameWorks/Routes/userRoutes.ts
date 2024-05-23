@@ -48,6 +48,7 @@ userRouter.post("/activity",jwtUser.verifyJwtUser,ActivityController.activity)
 userRouter.put("/activities/:id", jwtUser.verifyJwtUser, ActivityController.editActivites);
 userRouter.post("/getActivity", jwtUser.verifyJwtUser, ActivityController.getActivities);
 userRouter.get("/searchActivity", jwtUser.verifyJwtUser, ActivityController.searchActivity);
+userRouter.post('/hostedPhoto',jwtUser.verifyJwtUser,ActivityController.getProfilePhoto)
 
 userRouter.post("/chat",jwtUser.verifyJwtUser,UserController.chatStoring)
 userRouter.get("/chatmessages",jwtUser.verifyJwtUser,UserController.getChatMessages)

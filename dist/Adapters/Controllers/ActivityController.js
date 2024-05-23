@@ -181,6 +181,18 @@ const searchActivity = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
+const getProfilePhoto = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        console.log('started');
+        const { userId } = req.body;
+        console.log(userId, 'klklklklklkl');
+        const user = yield activityService_1.default.profilePhoto(userId);
+        res.status(200).json(user);
+        console.log(user, 'klklkl');
+    }
+    catch (error) {
+    }
+});
 exports.default = {
     createActivity,
     getActivity,
@@ -194,4 +206,5 @@ exports.default = {
     editActivites,
     getActivities,
     searchActivity,
+    getProfilePhoto
 };

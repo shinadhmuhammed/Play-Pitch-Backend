@@ -9,7 +9,6 @@ const configureSocket = (io: Server) => {
     });
 
     socket.on("chat-message", (data: { message: string, roomId: string, userId: string }) => {
-     
       io.to(data.roomId).emit('received-message', { message: data.message, senderId: data.userId }); 
     });
     
