@@ -17,11 +17,11 @@ const createActivity = async (
       userId: bookingDetails.userId,
       turfName: turfDetails.turfName,
       userName: user.username,
+      time:bookingDetails.Time,
       slot: bookingDetails.selectedSlot,
       date: bookingDetails.date,
       address: turfDetails.address,
     };
-    console.log(activityData, "activityData");
     try {
       const existingActivity = await userRepositary.getActivityByBookingId(
         bookingDetails._id

@@ -111,7 +111,6 @@ const authenticateWithGoogle = async (credential: string) => {
   if (!payload) {
     throw new Error("Google authentication failed: Payload is missing");
   }
-
   const userId = payload.sub;
   const email = payload.email;
   const name = payload.name;
@@ -207,13 +206,13 @@ const createStripeSession = async (
 ): Promise<string> => {
   const customer = await stripe.customers.create({
     name: "shinadh",
-    email: "muhammedshinadh@gmail.com",
+    email: "muhammed@gmail.com",
     address: {
       state: "kerala",
       line1: "123 kfaj kfdsj",
       postal_code: "672732",
       country: "US",
-      city: "palakkad",
+      city: "kannur",
     },
   });
   const session = await stripe.checkout.sessions.create({

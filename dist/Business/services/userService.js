@@ -167,13 +167,13 @@ const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY);
 const createStripeSession = (totalPrice, selectedDate, ownerId, selectedStartTime, selectedEndTime, turfDetail) => __awaiter(void 0, void 0, void 0, function* () {
     const customer = yield stripe.customers.create({
         name: "shinadh",
-        email: "muhammedshinadh@gmail.com",
+        email: "muhammed@gmail.com",
         address: {
             state: "kerala",
             line1: "123 kfaj kfdsj",
             postal_code: "672732",
             country: "US",
-            city: "palakkad",
+            city: "kannur",
         },
     });
     const session = yield stripe.checkout.sessions.create({
@@ -192,8 +192,8 @@ const createStripeSession = (totalPrice, selectedDate, ownerId, selectedStartTim
         ],
         customer: customer.id,
         mode: "payment",
-        success_url: `https://play-pitch.vercel.app/booking-verification?turfId=${encodeURIComponent(turfDetail._id)}&date=${encodeURIComponent(selectedDate)}&selectedStartTime=${encodeURIComponent(selectedStartTime)}&selectedEndTime=${encodeURIComponent(selectedEndTime)}&paymentMethod=online&totalPrice=${encodeURIComponent(totalPrice.toString())}&ownerId=${encodeURIComponent(ownerId)}`,
-        cancel_url: "https://play-pitch.vercel.app/booking-cancel",
+        success_url: `http://localhost:5173/booking-verification?turfId=${encodeURIComponent(turfDetail._id)}&date=${encodeURIComponent(selectedDate)}&selectedStartTime=${encodeURIComponent(selectedStartTime)}&selectedEndTime=${encodeURIComponent(selectedEndTime)}&paymentMethod=online&totalPrice=${encodeURIComponent(totalPrice.toString())}&ownerId=${encodeURIComponent(ownerId)}`,
+        cancel_url: "http://localhost:5173/booking-cancel",
     });
     return session.id;
 });

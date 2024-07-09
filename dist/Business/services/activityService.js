@@ -25,11 +25,11 @@ const createActivity = (formData, bookingDetails, turfDetails, user) => __awaite
         userId: bookingDetails.userId,
         turfName: turfDetails.turfName,
         userName: user.username,
+        time: bookingDetails.Time,
         slot: bookingDetails.selectedSlot,
         date: bookingDetails.date,
         address: turfDetails.address,
     };
-    console.log(activityData, "activityData");
     try {
         const existingActivity = yield userRepositary_1.default.getActivityByBookingId(bookingDetails._id);
         if (existingActivity) {
