@@ -54,7 +54,6 @@ const getTurf = () => __awaiter(void 0, void 0, void 0, function* () {
 });
 const getVenueId = (venueId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(venueId, "venueIddd");
         const venue = yield turfModel_1.default.findOne({ _id: venueId });
         return venue;
     }

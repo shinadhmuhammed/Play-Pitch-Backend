@@ -45,7 +45,6 @@ const getTurf = async () => {
 
 const getVenueId = async (venueId: string) => {
   try {
-    console.log(venueId, "venueIddd");
     const venue = await Turf.findOne({ _id: venueId });
     return venue;
   } catch (error) {
