@@ -38,7 +38,7 @@ const signup = async (
     const otp = generateOTP().toString();
     await nodemailer.sendOTPByEmail(email, otp);
     const token = jwtOwner.generateTokens(otp);
-    res.cookie("otp", token, {
+    res.cookie("ownerOtp", token, {
       expires: new Date(Date.now() + 180000),
       httpOnly: true, 
       secure: true,
@@ -92,7 +92,7 @@ const resendOtp = async (req: Request, res: Response) => {
     const gotp = generateOTP().toString();
     await nodemailer.sendOTPByEmail(email, gotp);
     const token = jwtOwner.generateTokens(gotp);
-    res.cookie("otp", token, {
+    res.cookie("ownerOtp", token, {
       expires: new Date(Date.now() + 180000),
       httpOnly: true, 
       secure: true,
