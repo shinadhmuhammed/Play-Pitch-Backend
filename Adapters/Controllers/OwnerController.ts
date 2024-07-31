@@ -38,7 +38,13 @@ const signup = async (
     const otp = generateOTP().toString();
     await nodemailer.sendOTPByEmail(email, otp);
     const token = jwtOwner.generateTokens(otp);
-    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+    res.cookie("otp", token, {
+      expires: new Date(Date.now() + 180000),
+      httpOnly: true, 
+      secure: true,
+      //@ts-ignore
+      sameSite: 'None'
+    });;
     res
       .status(201)
       .json({ status: 201, message: "Owner registered successfully" });
