@@ -27,7 +27,12 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const otp = generateOTP().toString();
         yield nodemailer_1.default.sendOTPByEmail(email, otp);
         const token = jwtOwner_1.default.generateTokens(otp);
-        res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+        res.cookie("otp", token, {
+            expires: new Date(Date.now() + 180000),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        });
         res
             .status(201)
             .json({ status: 201, message: "Owner registered successfully" });
@@ -75,7 +80,12 @@ const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const gotp = generateOTP().toString();
         yield nodemailer_1.default.sendOTPByEmail(email, gotp);
         const token = jwtOwner_1.default.generateTokens(gotp);
-        res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+        res.cookie("otp", token, {
+            expires: new Date(Date.now() + 180000),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        });
         res.status(200).json({ status: 200, message: "otp resend succesfully" });
     }
     catch (error) {
