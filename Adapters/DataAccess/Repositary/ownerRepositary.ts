@@ -2,18 +2,13 @@ import Owner from "../Models/ownerModel";
 import {ObjectId} from 'mongoose'
 import Turf from "../Models/turfModel";
 import User from "../Models/UserModel";
+import { OwnerModel } from "../Models/ownerModel"; 
 
 
 
-interface OwnerData {
-    _id: ObjectId;
-    email: string;
-    password:string
-    phone:string
-    role?:string;
-  }
+
   
-  const findOwner = async (email: string): Promise<OwnerData | null> => {
+  const findOwner = async (email: string): Promise<OwnerModel | null> => {
     try {
       const OwnerDatabase = await Owner.findOne({ email: email });
       return OwnerDatabase;

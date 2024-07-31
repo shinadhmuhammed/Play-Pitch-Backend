@@ -64,6 +64,10 @@ const activitySchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    time:{
+        type:String,
+        required:true
+    },
     address:{
         type:String,
         required:true

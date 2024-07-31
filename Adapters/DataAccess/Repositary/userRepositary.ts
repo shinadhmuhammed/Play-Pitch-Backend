@@ -104,26 +104,45 @@ const createActivity=async(activityData:any)=>{
   }
 }
 
+
+
+const parseDateTime = (dateTimeStr:string) => {
+  if (!dateTimeStr) {
+    throw new Error('DateTime string is undefined or empty.');
+  }
+  const [datePart, timePart] = dateTimeStr.split(' ');
+  const [year, month, day] = datePart.split('-').map(Number);
+  const [hour, minute, second] = timePart.split(':').map(Number);
+  return new Date(year, month - 1, day, hour, minute, second);
+};
+
 const getActivity = async () => {
   try {
     const currentDate = new Date();
-
+  
     const activities = await Activity.find();
     await Promise.all(activities.map(async activity => {
-      const activityDate = new Date(activity.date);
-      if (currentDate >= activityDate ) {
-        activity.status = "completed";
-        await activity.save();
+      try {
+        const activityDate = parseDateTime(activity.time);
+        console.log(currentDate, 'ddd', activityDate);
+        if (currentDate > activityDate) {
+          activity.status = "completed";
+          await activity.save();
+        }
+      } catch (error) {
+        console.log('err')
       }
     }));
+
     const ongoingActivities = activities.filter(activity => activity.status === "ongoing");
 
     return ongoingActivities;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw error;
   }
 };
+
 
 
 const existingRequest=async(activityId:string,userId:string)=>{

@@ -9,7 +9,9 @@ interface WalletStatement {
 }
 
 
-interface OwnerModel extends Document {
+export interface OwnerModel extends Document {
+  _id:string;
+  role:string;
   email: string;
   phone: string;
   password: string;

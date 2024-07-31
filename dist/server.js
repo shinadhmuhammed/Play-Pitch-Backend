@@ -15,15 +15,15 @@ const http_1 = __importDefault(require("http"));
 const socket_1 = __importDefault(require("./Business/utils/socket"));
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
+const corsOptions = {
+    origin: "https://play-pitch.vercel.app",
+    credentials: true,
+};
 const io = new socket_io_1.Server(server, {
-    cors: {
-        origin: "https://play-pitch.vercel.app/",
-    },
+    cors: corsOptions,
 });
 app.use((0, cookie_parser_1.default)());
-app.use((0, cors_1.default)({
-    credentials: true,
-}));
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use("/uploads", express_1.default.static("uploads"));

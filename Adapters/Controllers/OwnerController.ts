@@ -5,13 +5,14 @@ import jwtOwner from "../../FrameWorks/Middlewares/jwt/jwtOwner";
 import { JsonWebTokenError, JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import Owner from "../DataAccess/Models/ownerModel";
+import Owner, { OwnerModel } from "../DataAccess/Models/ownerModel";
 import Turf from "../DataAccess/Models/turfModel";
 import nodemailer from "../../Business/utils/nodemailer";
 import TurfBooking from "../DataAccess/Models/bookingModel";
 
 
 interface Ownersignup {
+  _id:string;
   email: string;
   phone: string;
   password: string;
@@ -99,7 +100,7 @@ const ownerLogin = async (
 ) => {
   try {
     const { email, password } = req.body;
-    const owner = await ownerRepositary.findOwner(email);
+    const owner:OwnerModel = await ownerRepositary.findOwner(email) as OwnerModel
     if (!owner) {
       return res.status(404).json({ status: 404, message: "Owner not found" });
     }

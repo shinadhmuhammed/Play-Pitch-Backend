@@ -106,22 +106,37 @@ const createActivity = (activityData) => __awaiter(void 0, void 0, void 0, funct
         console.log(error);
     }
 });
+const parseDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) {
+        throw new Error('DateTime string is undefined or empty.');
+    }
+    const [datePart, timePart] = dateTimeStr.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+    return new Date(year, month - 1, day, hour, minute, second);
+};
 const getActivity = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const currentDate = new Date();
         const activities = yield activityModel_1.default.find();
         yield Promise.all(activities.map((activity) => __awaiter(void 0, void 0, void 0, function* () {
-            const activityDate = new Date(activity.date);
-            if (currentDate >= activityDate) {
-                activity.status = "completed";
-                yield activity.save();
+            try {
+                const activityDate = parseDateTime(activity.time);
+                console.log(currentDate, 'ddd', activityDate);
+                if (currentDate > activityDate) {
+                    activity.status = "completed";
+                    yield activity.save();
+                }
+            }
+            catch (error) {
+                console.log('err');
             }
         })));
         const ongoingActivities = activities.filter(activity => activity.status === "ongoing");
         return ongoingActivities;
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         throw error;
     }
 });

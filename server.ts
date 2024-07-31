@@ -11,18 +11,20 @@ import configureSocket from "./Business/utils/socket";
 
 const app = express();
 const server = http.createServer(app);
+
+const corsOptions = {
+  origin: "https://play-pitch.vercel.app",
+  credentials: true,
+};
+
 const io = new SocketIOServer(server, {
-  cors: {
-    origin: "https://play-pitch.vercel.app/",
-  },
+  cors: corsOptions,
 });
 
 app.use(cookieParser());
-app.use(
-  cors({
-    credentials: true,
-  })
-);
+
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
