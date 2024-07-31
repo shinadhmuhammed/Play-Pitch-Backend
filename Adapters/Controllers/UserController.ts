@@ -179,7 +179,8 @@ const sendOtp = async (req: Request, res: Response) => {
     res.cookie("forgotOtp", token, {
       httpOnly: true,  
       secure: true,  
-      sameSite: 'strict',  
+      sameSite: 'none',
+      domain:'.play-pitch.vercel.app',  
       maxAge: 1000 * 60 * 10  
     });
     res.status(200).json({ message: "OTP sent successfully" });

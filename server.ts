@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 
 const corsOptions = {
-  origin: "https://play-pitch.vercel.app",
+  origin: "https://play-pitch.vercel.app/",
   credentials: true,
 };
 
