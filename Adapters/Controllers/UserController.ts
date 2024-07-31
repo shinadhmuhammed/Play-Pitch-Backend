@@ -44,7 +44,13 @@ const signup = async (
     const otp = generateOtp();
     await nodemailer.sendOTPByEmail(req.body.email, otp);
     const token = jwtUser.generateToken(otp);
-    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+    res.cookie("otp", token, {
+      httpOnly: true,    // Helps prevent XSS attacks
+      secure: true,      // Ensures cookie is only sent over HTTPS
+      sameSite: 'none',  // Allows cross-origin requests
+      domain: '.play-pitch.vercel.app',  // Your frontend domain
+      maxAge: 180000     // 3 minutes in milliseconds
+    });
     res.status(201).json({ status: 201, message: "User created successfully" });
   } catch (error) {
     console.error(error);
@@ -180,7 +186,7 @@ const sendOtp = async (req: Request, res: Response) => {
       httpOnly: true,  
       secure: true,  
       sameSite: 'none',
-      domain:'.play-pitch.vercel.app',  
+      domain:'play-pitch.vercel.app',  
       maxAge: 1000 * 60 * 10  
     });
     res.status(200).json({ message: "OTP sent successfully" });

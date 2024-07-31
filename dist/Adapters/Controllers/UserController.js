@@ -34,7 +34,13 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const otp = generateOtp();
         yield nodemailer_1.default.sendOTPByEmail(req.body.email, otp);
         const token = jwtUser_2.default.generateToken(otp);
-        res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+        res.cookie("otp", token, {
+            httpOnly: true, // Helps prevent XSS attacks
+            secure: true, // Ensures cookie is only sent over HTTPS
+            sameSite: 'none', // Allows cross-origin requests
+            domain: '.play-pitch.vercel.app', // Your frontend domain
+            maxAge: 180000 // 3 minutes in milliseconds
+        });
         res.status(201).json({ status: 201, message: "User created successfully" });
     }
     catch (error) {
@@ -148,7 +154,8 @@ const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.cookie("forgotOtp", token, {
             httpOnly: true,
             secure: true,
-            sameSite: 'strict',
+            sameSite: 'none',
+            domain: 'play-pitch.vercel.app',
             maxAge: 1000 * 60 * 10
         });
         res.status(200).json({ message: "OTP sent successfully" });
