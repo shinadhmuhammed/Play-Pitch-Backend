@@ -86,7 +86,13 @@ const resendOtp = async (req: Request, res: Response) => {
     const gotp = generateOTP().toString();
     await nodemailer.sendOTPByEmail(email, gotp);
     const token = jwtOwner.generateTokens(gotp);
-    res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+    res.cookie("otp", token, {
+      expires: new Date(Date.now() + 180000),
+      httpOnly: true, 
+      secure: true,
+      //@ts-ignore
+      sameSite: 'None'
+    });
     res.status(200).json({ status: 200, message: "otp resend succesfully" });
   } catch (error) {
     console.log(error);
@@ -167,11 +173,8 @@ const ForgotPasswordOtp = async (req: Request, res: Response) => {
 const verifyForgotOtp = async (req: Request, res: Response) => {
   try {
     const { otp } = req.body;
-    console.log(otp);
     const token = req.cookies.forgotOtpp;
-    console.log(token);
     const jwtfogot: JwtPayload | string = jwt.verify(token, "Owner@123");
-    console.log(jwtfogot);
 
     if (typeof jwtfogot === "string") {
       res
