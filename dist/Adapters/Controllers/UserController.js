@@ -145,7 +145,12 @@ const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield user.save();
         nodemailer_1.default.sendOTPByEmail(email, otp);
         const token = jwtUser_2.default.generateToken(otp);
-        res.cookie("forgotOtp", token);
+        res.cookie("forgotOtp", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            maxAge: 1000 * 60 * 10
+        });
         res.status(200).json({ message: "OTP sent successfully" });
     }
     catch (error) {

@@ -176,7 +176,12 @@ const sendOtp = async (req: Request, res: Response) => {
     await user.save();
     nodemailer.sendOTPByEmail(email, otp);
     const token = jwtUser.generateToken(otp);
-    res.cookie("forgotOtp", token,{httpOnly: true, secure: true, sameSite: 'none', domain: '.play-pitch.vercel.app'});
+    res.cookie("forgotOtp", token, {
+      httpOnly: true,  
+      secure: true,  
+      sameSite: 'strict',  
+      maxAge: 1000 * 60 * 10  
+    });
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error sending OTP:", error);
