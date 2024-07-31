@@ -36,10 +36,10 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = jwtUser_2.default.generateToken(otp);
         res.cookie("otp", token, {
             expires: new Date(Date.now() + 180000),
-            httpOnly: true, // Ensures cookie is not accessible via JavaScript
-            secure: true, // Set to true in production (HTTPS)
+            httpOnly: true,
+            secure: true,
             //@ts-ignore
-            sameSite: 'None' // Allows cookies to be sent cross-origin
+            sameSite: 'None'
         });
         res.status(201).json({ status: 201, message: "User created successfully" });
     }
@@ -115,7 +115,13 @@ const resendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const otp = generateOtp();
         yield nodemailer_1.default.sendOTPByEmail(email, otp);
         const token = jwtUser_2.default.generateToken(otp);
-        res.cookie("otp", token, { expires: new Date(Date.now() + 180000) });
+        res.cookie("otp", token, {
+            expires: new Date(Date.now() + 180000),
+            httpOnly: true,
+            secure: true,
+            //@ts-ignore
+            sameSite: 'None'
+        });
         res.status(200).json({ status: 200, message: "OTP resent successfully" });
     }
     catch (error) {
@@ -152,11 +158,11 @@ const sendOtp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         nodemailer_1.default.sendOTPByEmail(email, otp);
         const token = jwtUser_2.default.generateToken(otp);
         res.cookie("forgotOtp", token, {
+            expires: new Date(Date.now() + 180000),
             httpOnly: true,
             secure: true,
-            sameSite: 'none',
-            domain: 'play-pitch.vercel.app',
-            maxAge: 1000 * 60 * 10
+            //@ts-ignore
+            sameSite: 'None'
         });
         res.status(200).json({ message: "OTP sent successfully" });
     }
