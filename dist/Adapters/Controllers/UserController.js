@@ -35,11 +35,11 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield nodemailer_1.default.sendOTPByEmail(req.body.email, otp);
         const token = jwtUser_2.default.generateToken(otp);
         res.cookie("otp", token, {
-            httpOnly: true, // Helps prevent XSS attacks
-            secure: true, // Ensures cookie is only sent over HTTPS
-            sameSite: 'none', // Allows cross-origin requests
-            domain: '.play-pitch.vercel.app', // Your frontend domain
-            maxAge: 180000 // 3 minutes in milliseconds
+            expires: new Date(Date.now() + 180000),
+            httpOnly: true, // Ensures cookie is not accessible via JavaScript
+            secure: true, // Set to true in production (HTTPS)
+            //@ts-ignore
+            sameSite: 'None' // Allows cookies to be sent cross-origin
         });
         res.status(201).json({ status: 201, message: "User created successfully" });
     }
