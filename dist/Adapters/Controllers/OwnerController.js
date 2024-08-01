@@ -144,7 +144,12 @@ const ForgotPasswordOtp = (req, res) => __awaiter(void 0, void 0, void 0, functi
         const otp = generateOTP().toString();
         nodemailer_1.default.sendOTPByEmail(email, otp);
         const token = jwtOwner_1.default.generateTokens(otp);
-        res.cookie("forgotOtpp", token);
+        res.cookie("forgotOtpp", token, {
+            expires: new Date(Date.now() + 180000),
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none'
+        });
         res.status(200).json({ message: "otp send successfully" });
     }
     catch (error) {
@@ -250,9 +255,7 @@ const getBookingsForTurf = (req, res) => __awaiter(void 0, void 0, void 0, funct
 });
 const ownerDetails = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log('started');
         const ownerId = req.id;
-        console.log(ownerId, 'owenrid');
         if (!ownerId) {
             return res.status(400).json({ error: 'User ID is missing' });
         }
