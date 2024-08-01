@@ -42,7 +42,7 @@ const signup = async (
       expires: new Date(Date.now() + 180000), 
       httpOnly: true, 
       secure: true, 
-      sameSite: 'strict' 
+      sameSite: 'none' 
     });
     
     res
@@ -96,7 +96,7 @@ const resendOtp = async (req: Request, res: Response) => {
       expires: new Date(Date.now() + 180000), 
       httpOnly: true, 
       secure: true, 
-      sameSite: 'strict' 
+      sameSite: 'none' 
     });
     
     res.status(200).json({ status: 200, message: "otp resend succesfully" });
