@@ -13,6 +13,7 @@ AdminRouter.get('/venuerequest/:venueId',jwtAdmin.verifyJwtAdmin,AdminController
 AdminRouter.post('/venueaccept',jwtAdmin.verifyJwtAdmin,AdminController.venueAccepts)
 AdminRouter.post('/venuedecline',jwtAdmin.verifyJwtAdmin,AdminController.venueDecline)
 AdminRouter.get('/dashboard',jwtAdmin.verifyJwtAdmin,AdminController.adminDashboard)
+AdminRouter.get('/wallet',jwtAdmin.verifyJwtAdmin,AdminController.adminWallet)
 
 
 export default AdminRouter

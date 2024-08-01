@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const adminModel_1 = __importDefault(require("../../Adapters/DataAccess/Models/adminModel"));
 const turfModel_1 = __importDefault(require("../../Adapters/DataAccess/Models/turfModel"));
 const adminRepositary_1 = __importDefault(require("../../Adapters/DataAccess/Repositary/adminRepositary"));
 const adminLogin = (email, password) => __awaiter(void 0, void 0, void 0, function* () {
@@ -132,6 +133,15 @@ const getDashboard = () => __awaiter(void 0, void 0, void 0, function* () {
         throw new Error('Error getting dashboard information');
     }
 });
+const getWallet = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const wallet = yield adminModel_1.default.find();
+        return wallet;
+    }
+    catch (error) {
+        throw new Error('Error getting wallet information');
+    }
+});
 exports.default = {
     adminLogin,
     blockunblock,
@@ -140,4 +150,5 @@ exports.default = {
     declineVenueRequests,
     VenueById,
     getDashboard,
+    getWallet
 };

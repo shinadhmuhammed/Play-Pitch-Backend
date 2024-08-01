@@ -41,7 +41,6 @@ const blockAndUnblock = async (
 ) => {
   try {
     const { email, isBlocked } = req.body;
-    console.log(req.body);
     const blockunblock = await adminService.blockunblock(email, isBlocked);
     if (blockunblock) {
       res.status(201).json({ status: 201 });
@@ -64,7 +63,6 @@ const venueRequests = async (req: Request, res: Response) => {
 
 const venueAccepts = async (req: Request, res: Response) => {
   const { turfId, turfOwnerEmail } = req.body;
-  console.log(turfId, turfOwnerEmail);
   try {
     const updatedTurf = await adminService.acceptVenueRequests(turfId);
     const message = `Your turf with ID ${turfId} has been accepted.`;
@@ -119,6 +117,15 @@ const adminDashboard =async(req: Request, res: Response) => {
   }
 };
 
+const adminWallet=async(req: Request, res: Response)=>{
+    try {
+        const wallet=await adminService.getWallet()
+        res.status(200).json(wallet)
+    } catch (error) {
+      res.status(500).json({ message:"internal server error" });
+    }
+}
+
 
 export default {
   adminLogin,
@@ -129,4 +136,5 @@ export default {
   venueDecline,
   getVenueById,
   adminDashboard,
+  adminWallet
 };

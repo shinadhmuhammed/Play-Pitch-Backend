@@ -46,7 +46,6 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 const blockAndUnblock = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { email, isBlocked } = req.body;
-        console.log(req.body);
         const blockunblock = yield adminService_1.default.blockunblock(email, isBlocked);
         if (blockunblock) {
             res.status(201).json({ status: 201 });
@@ -70,7 +69,6 @@ const venueRequests = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 const venueAccepts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { turfId, turfOwnerEmail } = req.body;
-    console.log(turfId, turfOwnerEmail);
     try {
         const updatedTurf = yield adminService_1.default.acceptVenueRequests(turfId);
         const message = `Your turf with ID ${turfId} has been accepted.`;
@@ -119,6 +117,15 @@ const adminDashboard = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ message: "internal server error" });
     }
 });
+const adminWallet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const wallet = yield adminService_1.default.getWallet();
+        res.status(200).json(wallet);
+    }
+    catch (error) {
+        res.status(500).json({ message: "internal server error" });
+    }
+});
 exports.default = {
     adminLogin,
     getUsers,
@@ -128,4 +135,5 @@ exports.default = {
     venueDecline,
     getVenueById,
     adminDashboard,
+    adminWallet
 };

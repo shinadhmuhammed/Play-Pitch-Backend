@@ -15,4 +15,5 @@ AdminRouter.get('/venuerequest/:venueId', jwtAdmin_1.default.verifyJwtAdmin, Adm
 AdminRouter.post('/venueaccept', jwtAdmin_1.default.verifyJwtAdmin, AdminController_1.default.venueAccepts);
 AdminRouter.post('/venuedecline', jwtAdmin_1.default.verifyJwtAdmin, AdminController_1.default.venueDecline);
 AdminRouter.get('/dashboard', jwtAdmin_1.default.verifyJwtAdmin, AdminController_1.default.adminDashboard);
+AdminRouter.get('/wallet', jwtAdmin_1.default.verifyJwtAdmin, AdminController_1.default.adminWallet);
 exports.default = AdminRouter;

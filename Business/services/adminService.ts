@@ -1,3 +1,4 @@
+import Admin from "../../Adapters/DataAccess/Models/adminModel";
 import Owner from "../../Adapters/DataAccess/Models/ownerModel";
 import Turf from "../../Adapters/DataAccess/Models/turfModel";
 import adminRepositary from "../../Adapters/DataAccess/Repositary/adminRepositary";
@@ -136,6 +137,15 @@ const getDashboard = async() => {
   }
 };
 
+const getWallet=async()=>{
+  try {
+    const wallet=await Admin.find()
+    return wallet
+  } catch (error) {
+    throw new Error('Error getting wallet information');
+  }
+}
+
 
 
 export default {
@@ -146,4 +156,5 @@ export default {
   declineVenueRequests,
   VenueById,
   getDashboard,
+  getWallet
 };
