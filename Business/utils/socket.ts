@@ -12,9 +12,7 @@ const configureSocket = (io: Server) => {
       io.to(data.roomId).emit('received-message', { message: data.message, senderId: data.userId }); 
     });
     
-
     socket.on("disconnect", () => {
-     
     });
   });
 };

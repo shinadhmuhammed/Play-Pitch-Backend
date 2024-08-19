@@ -17,6 +17,7 @@ const UserModel_1 = __importDefault(require("../Models/UserModel"));
 const activityModel_1 = __importDefault(require("../Models/activityModel"));
 const bookingModel_1 = __importDefault(require("../Models/bookingModel"));
 const turfModel_1 = __importDefault(require("../Models/turfModel"));
+const moment = require('moment');
 const findUser = (email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userDatabase = yield UserModel_1.default.findOne({ email: email });
@@ -106,37 +107,37 @@ const createActivity = (activityData) => __awaiter(void 0, void 0, void 0, funct
         console.log(error);
     }
 });
-const parseDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) {
-        throw new Error('DateTime string is undefined or empty.');
+const parseDateTime = (dateStr, timeStr) => {
+    if (!dateStr || !timeStr) {
+        throw new Error('Date or time string is undefined or empty.');
     }
-    const [datePart, timePart] = dateTimeStr.split(' ');
-    const [year, month, day] = datePart.split('-').map(Number);
-    const [hour, minute, second] = timePart.split(':').map(Number);
-    return new Date(year, month - 1, day, hour, minute, second);
+    const datePart = moment(dateStr).format('YYYY-MM-DD');
+    const timePart = timeStr.split(' - ')[0]; // Extract the start time from the slot (e.g., "11:00" from "11:00 - 13:00")
+    return moment(`${datePart} ${timePart}`, 'YYYY-MM-DD HH:mm');
 };
 const getActivity = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const currentDate = new Date();
+        const currentDate = moment();
+        console.log('Current Date and Time:', currentDate.format('YYYY-MM-DD HH:mm:ss'));
         const activities = yield activityModel_1.default.find();
         yield Promise.all(activities.map((activity) => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                const activityDate = parseDateTime(activity.time);
-                console.log(currentDate, 'ddd', activityDate);
-                if (currentDate > activityDate) {
+                const activityDateTime = parseDateTime(activity.date, activity.slot);
+                console.log('Activity Date and Time:', activityDateTime.format('YYYY-MM-DD HH:mm:ss'));
+                if (currentDate.isAfter(activityDateTime)) {
                     activity.status = "completed";
                     yield activity.save();
                 }
             }
             catch (error) {
-                console.log('err');
+                console.error('Error processing activity:', error);
             }
         })));
         const ongoingActivities = activities.filter(activity => activity.status === "ongoing");
         return ongoingActivities;
     }
     catch (error) {
-        console.error(error);
+        console.error('Error fetching activities:', error);
         throw error;
     }
 });
