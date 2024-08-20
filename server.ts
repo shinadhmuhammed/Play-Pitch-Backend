@@ -8,14 +8,16 @@ import db from "./FrameWorks/Database/dbconnect";
 import { Server as SocketIOServer } from "socket.io";
 import http from "http";
 import configureSocket from "./Business/utils/socket";
-
 const app = express();
 const server = http.createServer(app);
 
 const corsOptions = {
   origin: "https://play-pitch.vercel.app",
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
+
 
 const io = new SocketIOServer(server, {
   cors: corsOptions,

@@ -16,8 +16,10 @@ const socket_1 = __importDefault(require("./Business/utils/socket"));
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const corsOptions = {
-    origin: "http://localhost:5173/",
+    origin: "https://play-pitch.vercel.app",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
 };
 const io = new socket_io_1.Server(server, {
     cors: corsOptions,
