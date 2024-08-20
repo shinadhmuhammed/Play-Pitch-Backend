@@ -17,7 +17,7 @@ const UserModel_1 = __importDefault(require("../Models/UserModel"));
 const activityModel_1 = __importDefault(require("../Models/activityModel"));
 const bookingModel_1 = __importDefault(require("../Models/bookingModel"));
 const turfModel_1 = __importDefault(require("../Models/turfModel"));
-const moment = require('moment');
+const moment = require("moment");
 const findUser = (email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userDatabase = yield UserModel_1.default.findOne({ email: email });
@@ -41,7 +41,7 @@ const booking = (turfId, date, startTime, endTime) => __awaiter(void 0, void 0, 
         const bookings = yield bookingModel_1.default.findOne({
             turfId: turfId,
             date: date,
-            selectedSlot: { $gte: startTime, $lte: endTime }
+            selectedSlot: { $gte: startTime, $lte: endTime },
         });
         return bookings;
     }
@@ -54,7 +54,7 @@ const slotBooking = (turfId, date, startTime, endTime) => __awaiter(void 0, void
         const existingBooking = yield bookingModel_1.default.findOne({
             turfId: turfId,
             date: date,
-            selectedSlot: { $gte: startTime, $lte: endTime }
+            selectedSlot: { $gte: startTime, $lte: endTime },
         });
         return !existingBooking;
     }
@@ -67,26 +67,26 @@ const bookingSave = (booking) => __awaiter(void 0, void 0, void 0, function* () 
     yield booking.save();
 });
 const updatedWalletBalance = (userId, updatedWalletAmount) => {
-    return UserModel_1.default.findByIdAndUpdate(userId, { $set: { wallet: updatedWalletAmount } });
+    return UserModel_1.default.findByIdAndUpdate(userId, {
+        $set: { wallet: updatedWalletAmount },
+    });
 };
 const getUserById = (userId) => {
     return UserModel_1.default.findById(userId);
 };
 const recordTransactionInWallet = (userId, turfId, amount, transactionType) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(transactionType, 'yts');
-    console.log(turfId, amount, transactionType, 'hai');
     const turf = yield turfModel_1.default.findById(turfId);
     const transaction = {
         date: new Date(),
-        walletType: 'wallet',
+        walletType: "wallet",
         amount: amount,
         turfName: turf === null || turf === void 0 ? void 0 : turf.turfName,
-        transactionType: transactionType
+        transactionType: transactionType,
     };
     return UserModel_1.default.findByIdAndUpdate(userId, {
         $push: {
-            walletStatements: transaction
-        }
+            walletStatements: transaction,
+        },
     });
 });
 const getActivityByBookingId = (bookingId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -109,35 +109,33 @@ const createActivity = (activityData) => __awaiter(void 0, void 0, void 0, funct
 });
 const parseDateTime = (dateStr, timeStr) => {
     if (!dateStr || !timeStr) {
-        throw new Error('Date or time string is undefined or empty.');
+        throw new Error("Date or time string is undefined or empty.");
     }
-    const datePart = moment(dateStr).format('YYYY-MM-DD');
-    const timePart = timeStr.split(' - ')[0]; // Extract the start time from the slot (e.g., "11:00" from "11:00 - 13:00")
-    return moment(`${datePart} ${timePart}`, 'YYYY-MM-DD HH:mm');
+    const datePart = moment(dateStr).format("YYYY-MM-DD");
+    const timePart = timeStr.split(" - ")[0];
+    return moment(`${datePart} ${timePart}`, "YYYY-MM-DD HH:mm");
 };
 const getActivity = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const currentDate = moment();
-        console.log('Current Date and Time:', currentDate.format('YYYY-MM-DD HH:mm:ss'));
         const activities = yield activityModel_1.default.find();
         yield Promise.all(activities.map((activity) => __awaiter(void 0, void 0, void 0, function* () {
             try {
                 const activityDateTime = parseDateTime(activity.date, activity.slot);
-                console.log('Activity Date and Time:', activityDateTime.format('YYYY-MM-DD HH:mm:ss'));
                 if (currentDate.isAfter(activityDateTime)) {
                     activity.status = "completed";
                     yield activity.save();
                 }
             }
             catch (error) {
-                console.error('Error processing activity:', error);
+                console.error("Error processing activity:", error);
             }
         })));
-        const ongoingActivities = activities.filter(activity => activity.status === "ongoing");
+        const ongoingActivities = activities.filter((activity) => activity.status === "ongoing");
         return ongoingActivities;
     }
     catch (error) {
-        console.error('Error fetching activities:', error);
+        console.error("Error fetching activities:", error);
         throw error;
     }
 });
@@ -159,8 +157,8 @@ const findChatUser = (userId) => __awaiter(void 0, void 0, void 0, function* () 
         return user;
     }
     catch (error) {
-        console.error('Error reciving user:', error);
-        throw new Error('Failed to get the chat user');
+        console.error("Error reciving user:", error);
+        throw new Error("Failed to get the chat user");
     }
 });
 const ratingGet = (userId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -168,12 +166,13 @@ const ratingGet = (userId) => __awaiter(void 0, void 0, void 0, function* () {
         const ratings = yield RatingModel_1.default.findById({ userId });
         return ratings;
     }
-    catch (error) {
-    }
+    catch (error) { }
 });
 const searchTurfName = (query) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const searchResults = yield turfModel_1.default.find({ turfName: { $regex: query, $options: 'i' } });
+        const searchResults = yield turfModel_1.default.find({
+            turfName: { $regex: query, $options: "i" },
+        });
         return searchResults;
     }
     catch (error) {
@@ -195,5 +194,5 @@ exports.default = {
     existingRequest,
     findChatUser,
     ratingGet,
-    searchTurfName
+    searchTurfName,
 };
