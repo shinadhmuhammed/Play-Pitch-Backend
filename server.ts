@@ -18,22 +18,30 @@ const corsOptions = {
 };
 
 const io = new SocketIOServer(server, {
-  cors: corsOptions,
+  cors: {
+    origin: "https://play-pitch.vercel.app",
+    credentials: true,
+  },
 });
-
-app.use(cookieParser());
 
 
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
+
+
+app.options('*', cors(corsOptions));
+
 
 app.use("/", userRouter);
 app.use("/owner", OwnerRouter);
 app.use("/admin", AdminRouter);
 
+
 configureSocket(io);
+
 
 db.once("open", () => {
   server.listen(3001, () => {
