@@ -69,12 +69,16 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       longitude,
     } = req.body;
 
+    // Ensure courtType is always treated as an array
+    const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
+
     const prices: Prices = {};
-    courtType.forEach((type: string | number) => {
+    courtTypes.forEach((type: string | number) => {
       prices[type] = req.body[`${type}-price`];
     });
 
     console.log(prices, "prices");
+
     if (
       !turfName ||
       !address ||
@@ -91,8 +95,6 @@ const createTurf = async (req: CustomRequest, res: Response) => {
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
-    const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
 
     if (courtTypes.length === 0) {
       return res.status(400).json({ message: "Court type is required" });
@@ -125,7 +127,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
       openingTime,
       closingTime,
       contactNumber,
-      courtType,
+      courtType: courtTypes,
       latitude,
       longitude,
       images: uploadedImages,
@@ -135,13 +137,14 @@ const createTurf = async (req: CustomRequest, res: Response) => {
     });
 
     courtTypes.forEach((type: string) => {
-      
       if (prices.hasOwnProperty(type)) {
         newTurf.price[type] = prices[type];
       } else {
         // newTurf.price[type] = DEFAULT_PRICE;
       }
     });
+
+    console.log(newTurf, 'lllolol');
     await newTurf.save();
     res.status(201).json({ message: "Turf added successfully" });
   } catch (error) {
@@ -149,6 +152,7 @@ const createTurf = async (req: CustomRequest, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 const editTurf = async (id: string, updatedTurfData: any) => {
   try {

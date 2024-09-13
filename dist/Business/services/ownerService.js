@@ -44,8 +44,10 @@ const confirmPassword = (plainPassword, hashedPassword) => __awaiter(void 0, voi
 const createTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { turfName, address, city, aboutVenue, facilities, openingTime, closingTime, contactNumber, courtType, latitude, longitude, } = req.body;
+        // Ensure courtType is always treated as an array
+        const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
         const prices = {};
-        courtType.forEach((type) => {
+        courtTypes.forEach((type) => {
             prices[type] = req.body[`${type}-price`];
         });
         console.log(prices, "prices");
@@ -63,7 +65,6 @@ const createTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             !longitude) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        const courtTypes = Array.isArray(courtType) ? courtType : [courtType];
         if (courtTypes.length === 0) {
             return res.status(400).json({ message: "Court type is required" });
         }
@@ -87,7 +88,7 @@ const createTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             openingTime,
             closingTime,
             contactNumber,
-            courtType,
+            courtType: courtTypes,
             latitude,
             longitude,
             images: uploadedImages,
@@ -103,6 +104,7 @@ const createTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 // newTurf.price[type] = DEFAULT_PRICE;
             }
         });
+        console.log(newTurf, 'lllolol');
         yield newTurf.save();
         res.status(201).json({ message: "Turf added successfully" });
     }

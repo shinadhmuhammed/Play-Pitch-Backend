@@ -481,7 +481,6 @@ const getUserRating = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 const getTurfAverageRating = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { turfId } = req.body;
-        console.log('hai', turfId);
         const ratings = yield userService_1.default.getTurfRatings(turfId);
         if (ratings.length === 0) {
             res.status(404).json({ message: "No ratings found for this turf" });
@@ -491,7 +490,6 @@ const getTurfAverageRating = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const averageRating = totalRating / ratings.length;
         const maxRating = 5;
         const ratingOutOfFive = (averageRating / maxRating) * 5;
-        console.log('averageRating', averageRating);
         res.status(200).json({ averageRating: ratingOutOfFive });
     }
     catch (error) {
@@ -506,6 +504,7 @@ const nearestTurf = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             latitude: { $gt: latitude - 0.1, $lt: latitude + 0.1 },
             longitude: { $gt: longitude - 0.1, $lt: longitude + 0.1 },
         });
+        console.log(nearbyTurfs, 'klkllkl');
         res.status(200).json({
             success: true,
             nearestTurf: nearbyTurfs[0],

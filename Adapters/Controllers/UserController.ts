@@ -612,7 +612,6 @@ const getUserRating = async (req: Request, res: Response) => {
 const getTurfAverageRating = async (req: Request, res: Response) => {
   try {
     const { turfId } = req.body;
-    console.log('hai',turfId)
     const ratings = await userService.getTurfRatings(turfId);
 
     if (ratings.length === 0) {
@@ -627,7 +626,6 @@ const getTurfAverageRating = async (req: Request, res: Response) => {
     const averageRating = totalRating / ratings.length;
     const maxRating = 5;
     const ratingOutOfFive = (averageRating / maxRating) * 5;
-    console.log('averageRating',averageRating )
     res.status(200).json({ averageRating: ratingOutOfFive });
   } catch (error) {
     console.error(error);
@@ -642,6 +640,7 @@ const nearestTurf = async (req: Request, res: Response) => {
       latitude: { $gt: latitude - 0.1, $lt: latitude + 0.1 },
       longitude: { $gt: longitude - 0.1, $lt: longitude + 0.1 },
     });
+    console.log(nearbyTurfs,'klkllkl')
     res.status(200).json({
       success: true,
       nearestTurf: nearbyTurfs[0],
